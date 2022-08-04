@@ -8,6 +8,7 @@ const { response } = require('express');
 const { Console } = require('console');
 const e = require('express');
 
+
 var nodemailer = require('nodemailer');
 
 
@@ -66,7 +67,7 @@ router.get('/get',(req,res) => {
 
             });
           
-           console.log(arrayData)
+          // console.log(arrayData)
     
            var dateObj = new Date();
            var month = dateObj.getUTCMonth() + 1; //months from 1-12
@@ -185,7 +186,7 @@ router.get('/add', (req,res) => {
                 data.push(Number.parseInt(element.orderID));
             });
             // data.push(result);
-            console.log(data);
+            //console.log(data);
 
             for (let index = 0; index < response.data.orders.length; index++) {
       
@@ -219,7 +220,7 @@ router.get('/add', (req,res) => {
                         ]
                         con.query(sql,[valuse], function (err, result) {
                           if (err) throw err;
-                          console.log(timestamp)
+                         // console.log(timestamp)
                         });
                     }
                
