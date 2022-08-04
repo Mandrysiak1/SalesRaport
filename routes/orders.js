@@ -8,6 +8,9 @@ const { response } = require('express');
 const { Console } = require('console');
 const e = require('express');
 
+var nodemailer = require('nodemailer');
+
+
 const fs = require("fs");
 const PDFDocument = require("pdfkit-table");
 
@@ -73,6 +76,33 @@ router.get('/get',(req,res) => {
               },
               });
              doc.end();
+
+
+             var mail = nodemailer.createTransport({
+                service: 'gmail',
+                auth: {
+                  user: 'family24raports@gmail.com',
+                  pass: 'gcjorwoagwiwyhsp'
+                }
+              });
+
+              var mailOptions = {
+                from: 'givemesomething9@gmail.com',
+                to: 'andrysiakmaciejj@gmail.com',
+                subject: 'Sending Email via Node.js',
+                text: 'That was easy!',
+                attachments: [
+                   { filename: 'document.pdf', path: './document.pdf'}
+                ]
+              };
+               
+              mail.sendMail(mailOptions, function(error, info){
+                if (error) {
+                  console.log(error);
+                } else {
+                  console.log('Email sent: ' + info.response);
+                }
+              });
 
     });
 
