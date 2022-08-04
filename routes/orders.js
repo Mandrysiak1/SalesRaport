@@ -201,10 +201,14 @@ router.get('/add', (req,res) => {
                     var productID =  response.data.orders[index].products[i].product_id
                     var productName = response.data.orders[index].products[i].name
                     var sku = response.data.orders[index].products[i].sku
+                    var quantity = response.data.orders[index].products[i].quantity
                     //console.log(sku)
                    
+
         
-                    //console.log(data);
+                    for (let index = 0; index < quantity; index++) {
+                      
+                                 //console.log(data);
                     if(!data.includes(orderID))
                     {
                       console.log("dodano: " + orderID);
@@ -224,6 +228,8 @@ router.get('/add', (req,res) => {
                          // console.log(timestamp)
                         });
                     }
+                    }
+         
                
                 }
         
