@@ -2,6 +2,8 @@
 const express = require('express')
 const app = express()
 
+require('dotenv').config({ path: './crid.env' })
+  
 
 app.get('/', (req,res) =>{
     console.log("here")

@@ -26,18 +26,26 @@ router.get('/get',(req,res) => {
         'parameters': JSON.stringify(params)
     };
     axios
-    .post('https://api.baselinker.com/connector.php', data ,{headers:{"X-BLToken":"3005243-3013293-7NMX38KMPB6S5AGQ87WAQ0KE8D735MPWRET1I8AWQ7BNNS7KOQ577X03CYIPMNZM",'Content-Type': 'multipart/form-data'}})
+    .post('https://api.baselinker.com/connector.php', data ,{headers:{"X-BLToken":process.env.BASELINKER_API_KEY,'Content-Type': 'multipart/form-data'}})
      .then(res => {
 
         var con = mysql.createConnection({
             host: "mariadb105.server179088.nazwa.pl",
             user: "server179088_raportyBL",
-            password: "s^KctNDiWK8!&S",
+            password: process.env.DATABASE_PASSWORD,
             database: "server179088_raportyBL"
           });
 
-          var sql = "select product_name, sku, product_id ,count(*) as total from orders group by product_id"
-          con.query(sql, function (err, result) {
+          var d = new Date();
+          d.setDate(d.getDate() - 1);
+      
+          var datastamp =  Math.floor(d.getTime() / 1000)
+
+          var sql = "select product_name, sku, product_id ,count(*) as total from orders where timestamp > ? group by product_id "
+          var valuse = [
+            [datastamp]
+        ]
+          con.query(sql,[valuse], function (err, result) {
             if (err) throw err;
             
              var arrayData = [];
@@ -59,9 +67,19 @@ router.get('/get',(req,res) => {
             });
           
            console.log(arrayData)
-
+    
+           var dateObj = new Date();
+           var month = dateObj.getUTCMonth() + 1; //months from 1-12
+           var day = dateObj.getUTCDate();
+           var year = dateObj.getUTCFullYear();
+           var hours = dateObj.getHours();
+           var minutes = dateObj.getMinutes();
+    
+           
+           newdate = day + "_" + month + "_" + year + "_" + hours + "_"+ minutes;
+        
            let doc = new PDFDocument({ margin: 30, size: 'A4' });
-           doc.pipe(fs.createWriteStream("./document.pdf"));
+           doc.pipe(fs.createWriteStream("./raport_" + newdate+".pdf"));
 
            const tableArray = {
             headers: ["Nazwa", "SKU", "Sprzedane", "W Magazynie"],
@@ -82,7 +100,7 @@ router.get('/get',(req,res) => {
                 service: 'gmail',
                 auth: {
                   user: 'family24raports@gmail.com',
-                  pass: 'gcjorwoagwiwyhsp'
+                  pass: process.env.EMAIL_PASSWORD
                 }
               });
 
@@ -92,7 +110,7 @@ router.get('/get',(req,res) => {
                 subject: 'Sending Email via Node.js',
                 text: 'That was easy!',
                 attachments: [
-                   { filename: 'document.pdf', path: './document.pdf'}
+                   { filename: 'raport_' + newdate+'.pdf', path: './raport_' + newdate+'.pdf'}
                 ]
               };
                
@@ -131,7 +149,7 @@ router.get('/add', (req,res) => {
 
 
     var d = new Date();
-    d.setHours(d.getHours() - 10);
+    d.setHours(d.getHours() - 2);
 
     var datastamp =  Math.floor(d.getTime() / 1000)
 
@@ -145,7 +163,7 @@ router.get('/add', (req,res) => {
         'parameters': JSON.stringify(params)
     };
     axios
-    .post('https://api.baselinker.com/connector.php', data ,{headers:{"X-BLToken":"3005243-3013293-7NMX38KMPB6S5AGQ87WAQ0KE8D735MPWRET1I8AWQ7BNNS7KOQ577X03CYIPMNZM",'Content-Type': 'multipart/form-data'}})
+    .post('https://api.baselinker.com/connector.php', data ,{headers:{"X-BLToken":process.env.BASELINKER_API_KEY,'Content-Type': 'multipart/form-data'}})
     .then(response => {
 
     //   console.log(`statusCode: ${res.status}`);
@@ -154,7 +172,7 @@ router.get('/add', (req,res) => {
         var con = mysql.createConnection({
             host: "mariadb105.server179088.nazwa.pl",
             user: "server179088_raportyBL",
-            password: "s^KctNDiWK8!&S",
+            password: process.env.DATABASE_PASSWORD,
             database: "server179088_raportyBL"
           });
 
@@ -167,7 +185,7 @@ router.get('/add', (req,res) => {
                 data.push(Number.parseInt(element.orderID));
             });
             // data.push(result);
-            //console.log(data);
+            console.log(data);
 
             for (let index = 0; index < response.data.orders.length; index++) {
       
@@ -183,7 +201,7 @@ router.get('/add', (req,res) => {
                     var productName = response.data.orders[index].products[i].name
                     var sku = response.data.orders[index].products[i].sku
                     //console.log(sku)
-                  //  console.log(timestamp)
+                   
         
                     //console.log(data);
                     if(!data.includes(orderID))
@@ -201,6 +219,7 @@ router.get('/add', (req,res) => {
                         ]
                         con.query(sql,[valuse], function (err, result) {
                           if (err) throw err;
+                          console.log(timestamp)
                         });
                     }
                
