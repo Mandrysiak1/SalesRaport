@@ -207,6 +207,7 @@ router.get('/add', (req,res) => {
                     //console.log(data);
                     if(!data.includes(orderID))
                     {
+                      console.log("dodano: " + orderID);
                         var sql = "INSERT INTO orders (orderID,product_id,product_name, sku, timestamp ) VALUES ( ?)"
                         var valuse = [
                             [orderID],

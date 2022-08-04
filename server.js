@@ -12,8 +12,9 @@ app.get('/', (req,res) =>{
     res.send("hi")
 })
 
-cron.schedule('0 */2 * * *', function() {
-    console.log('running a task every 2h ');
+cron.schedule('0/2 * * * *', function() {
+    console.log('running a task every 2min ');
+  
     request(app)
   .get('/orders/add')
   .expect(200)
