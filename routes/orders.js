@@ -39,17 +39,17 @@ router.get('/get',(req,res) => {
 
           var d = new Date();
           d.setDate(d.getDate() - 1);
-      
           var datastamp =  Math.floor(d.getTime() / 1000)
 
           var sql = "select product_name, sku, product_id ,count(*) as total from orders where timestamp > ? group by product_id "
           var valuse = [
             [datastamp]
-        ]
+          ]
+
           con.query(sql,[valuse], function (err, result) {
             if (err) throw err;
             
-             var arrayData = [];
+            var arrayData = [];
 
             result.forEach(element => {
 
@@ -59,26 +59,20 @@ router.get('/get',(req,res) => {
                 {
                     arr[3] = res.data.products[element.product_id].stock.bl_5662
                 }
-
                 arrayData.push(arr)
-
                 arrayData.sort(sortFunction);
 
 
             });
-          
-          // console.log(arrayData)
-    
+              
            var dateObj = new Date();
            var month = dateObj.getUTCMonth() + 1; //months from 1-12
            var day = dateObj.getUTCDate();
            var year = dateObj.getUTCFullYear();
            var hours = dateObj.getHours();
            var minutes = dateObj.getMinutes();
-    
-           
-           newdate = day + "_" + month + "_" + year + "_" + hours + "_"+ minutes;
-        
+             
+           newdate = day + "_" + month + "_" + year + "_" + hours + "_"+ minutes;        
            let doc = new PDFDocument({ margin: 30, size: 'A4' });
            doc.pipe(fs.createWriteStream("./raport_" + newdate+".pdf"));
 
@@ -136,14 +130,6 @@ router.get('/get',(req,res) => {
 res.send("xd");
 
 });
-function sortFunction(a, b) {
-    if (a[2] === b[2]) {
-        return 0;
-    }
-    else {
-        return (a[2] > b[2]) ? -1 : 1;
-    }
-}
 
 
 router.get('/add', (req,res) => {
@@ -167,9 +153,6 @@ router.get('/add', (req,res) => {
     .post('https://api.baselinker.com/connector.php', data ,{headers:{"X-BLToken":process.env.BASELINKER_API_KEY,'Content-Type': 'multipart/form-data'}})
     .then(response => {
 
-    //   console.log(`statusCode: ${res.status}`);
-    //   console.log(res);
-        //console.log(res.data.[res.data.orders.length-1]);
         var con = mysql.createConnection({
             host: "mariadb105.server179088.nazwa.pl",
             user: "server179088_raportyBL",
@@ -185,16 +168,12 @@ router.get('/add', (req,res) => {
             result.forEach(element => {
                 data.push(Number.parseInt(element.orderID));
             });
-            // data.push(result);
-            //console.log(data);
 
             for (let index = 0; index < response.data.orders.length; index++) {
       
-               // console.log(response.data.orders[index])
                 var timestamp = response.data.orders[index].date_confirmed;
                 var orderID = Number.parseInt(response.data.orders[index].order_id);
-                
-        
+                        
 
                 for (let i = 0; i < response.data.orders[index].products.length; i++) {
                  
@@ -202,16 +181,14 @@ router.get('/add', (req,res) => {
                     var productName = response.data.orders[index].products[i].name
                     var sku = response.data.orders[index].products[i].sku
                     var quantity = response.data.orders[index].products[i].quantity
-                    //console.log(sku)
                    
-
         
                     for (let index = 0; index < quantity; index++) {
                       
-                                 //console.log(data);
                     if(!data.includes(orderID))
                     {
-                      console.log("dodano: " + productName + " : " + sku);
+                        console.log("dodano: " + productName + " : " + sku);
+
                         var sql = "INSERT INTO orders (orderID,product_id,product_name, sku, timestamp ) VALUES ( ?)"
                         var valuse = [
                             [orderID],
@@ -219,26 +196,20 @@ router.get('/add', (req,res) => {
                             [productName],
                             [sku],
                             [timestamp]
-                           
-                          
-                       
                         ]
                         con.query(sql,[valuse], function (err, result) {
                           if (err) throw err;
-                         // console.log(timestamp)
+                          
                         });
                     }
                     }
-         
-               
+                        
                 }
         
              }
           });
-
-    
         
-        res.send("xd");
+        res.send("Add");
      
     })
     .catch(error => {
@@ -246,5 +217,14 @@ router.get('/add', (req,res) => {
     });
 
 })
+
+function sortFunction(a, b) {
+  if (a[2] === b[2]) {
+      return 0;
+  }
+  else {
+      return (a[2] > b[2]) ? -1 : 1;
+  }
+}
 
 module.exports = router
