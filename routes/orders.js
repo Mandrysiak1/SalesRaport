@@ -102,8 +102,8 @@ router.get('/get',(req,res) => {
               var mailOptions = {
                 from: 'givemesomething9@gmail.com',
                 to: 'andrysiakmaciejj@gmail.com',
-                subject: 'Sending Email via Node.js',
-                text: 'That was easy!',
+                subject: 'Raport sprzedaży',
+                text: 'Raport sprzedaży',
                 attachments: [
                    { filename: 'raport_' + newdate+'.pdf', path: './raport_' + newdate+'.pdf'}
                 ]
