@@ -28,7 +28,7 @@ router.get('/get',(req,res) => {
 
 
   var d = new Date();
-  d.setDate(d.getDate() - 1);
+  d.setDate(d.getDate() - 30);
   var datastamp =  Math.floor(d.getTime() / 1000)
 
   var sql = "select product_name, sku, product_id ,count(*) as total from orders where timestamp > ? group by product_id "
@@ -43,7 +43,8 @@ router.get('/get',(req,res) => {
     var productIDs = [];
 
     result.forEach(element => {
-      if(!productIDs.includes(element))
+      //console.log("tego: " + element.product_id)
+      if(!productIDs.includes(element) && !(typeof element.product_id === 'string' && element.product_id.length === 0) )
       productIDs.push(element.product_id)
 
     })
@@ -64,23 +65,180 @@ router.get('/get',(req,res) => {
         .then(res => {
         
     
-          productIDs.forEach(element =>{
+          //productIDs.forEach(element =>{
 
-            if(res.data.products[element])
-          {
-            console.log(res.data.products[element].prices[4494])
-            console.log(res.data.products[element].text_fields.extra_field_4240)
+            //console.log(res.data.products[element])
+            // console.log(res.data.products[element].prices[4494])
+            // console.log(res.data.products[element].text_fields.extra_field_4240)
+            // console.log(res.data.products[element].text_fields.extra_field_5072)
+            // console.log(res.data.products[element].stock.bl_5662)
+            
+            var selectedProducts = [];
 
+           // console.log(result.);
 
-          }     
+             result.forEach(element_res => {
+              
+             // if((typeof res.data.products[element] === 'undefined')) return
 
+           //  console.log(element.total)
+
+             //console.log(res.data.products[element.product_id].stock[bl_5662])
+
+            
            
+              
+             if(res.data.products[element_res.product_id]){
+
+              if(element_res.total > res.data.products[element_res.product_id].stock.bl_5662 ){
+               // console.log(res.data.products[element.product_id].stock.bl_5662)
+                selectedProducts.push(element_res)
+                
+              }
+
+             }
+
+            })
+  
+
+            var dataArr = []
+            console.log ("sp: " +selectedProducts.length)
+
+            selectedProducts.forEach(element => {
+
+              if(res.data.products[element.product_id]){
+
+
+         
+
+              let product_name = res.data.products[element.product_id].text_fields.name
+              let sku = res.data.products[element.product_id].sku
+              let sold = 0
+
+              result.forEach(el => {
+                //console.log(el.product_id)
+                if(el.product_id == element.product_id)
+                {
+                  sold = el.total
+                }
+              })
+
+             // console.log(result.find(el => Number.parseInt(el.product_id) === element.product_id))
+              
+              let in_stock= res.data.products[element.product_id].stock.bl_5662
+              let price = res.data.products[element.product_id].prices[4494]
+              let buy_price = res.data.products[element.product_id].text_fields.extra_field_5072
+              let margin = ((price - buy_price)/ price * 100).toFixed(2);
+              let vendor = res.data.products[element.product_id].text_fields.extra_field_4240 
+
+
+              let arr = []
+               arr = [product_name,sku,sold,in_stock,price,buy_price,margin,vendor]
+                              // if(res.data.products[element.product_id])
+                              // {
+                              //     arr[3] = res.data.products[element.product_id].stock.bl_5662
+                              // }
+                              // arrayData.push(arr)
+                              // arrayData.sort(sortFunction);
+
+                dataArr.push(arr)
+              }
+            })
+
+                  
+          
+          console.log("da: "+dataArr.length)
+       
+          var vendorArr = []
+          dataArr.forEach(row => {
+              if(!vendorArr.includes(row[7]))
+              {
+                vendorArr.push(row[7])
+              }
+          })
+        
+
+          vendorArr.forEach(vendor => {
+
+            let arr = []
+            dataArr.forEach(rows => {
+              if(rows[7] == vendor)
+              {
+                arr.push(rows)
+              }
+              
+            })
+
+           var dateObj = new Date();
+
+           var month = dateObj.getUTCMonth() + 1; //months from 1-12
+           var day = dateObj.getUTCDate();
+           var year = dateObj.getUTCFullYear();
+           var hours = dateObj.getHours();
+           var minutes = dateObj.getMinutes();
+             
+           newdate = day + "_" + month + "_" + year + "_" + hours + "_"+ minutes + "_" + vendor;        
+         
+           let doc = new PDFDocument({ margin: 30, size: 'A4' });
+           doc.pipe(fs.createWriteStream("./raport_" + newdate+".pdf"));
+
+           const tableArray = {
+            headers: ["Nazwa","sku","sprzedanych","w magazynie", "cena", "cena zakupu", "marża", "dostawca"],
+            rows: arr
+          };
+
+             doc.table( tableArray, {
+
+              //  width: 500,
+                // x: 150,
+              columnsSize: [200,75,50,50,50,50,50,50], 
+
+                prepareHeader: () => doc.font(`${__dirname}/arial.ttf`).fontSize(8),
+                prepareRow: (row, indexColumn, indexRow, rectRow) => {
+                doc.font(`${__dirname}/arial.ttf`).fontSize(8);
+                indexColumn === 0 && doc.addBackground(rectRow, (indexRow % 2 ? 'blue' : 'green'), 0.15);
+              },
+              });
+             doc.end();
+
+
+             
 
           })
 
-          
+          var dateObj = new Date();
 
+          var month = dateObj.getUTCMonth() + 1; //months from 1-12
+          var day = dateObj.getUTCDate();
+          var year = dateObj.getUTCFullYear();
+          var hours = dateObj.getHours();
+          var minutes = dateObj.getMinutes();
+            
+          newdate = day + "_" + month + "_" + year + "_" + hours + "_"+ minutes + "_zbiorczy";        
         
+          let doc1 = new PDFDocument({ margin: 30, size: 'A4' });
+          doc1.pipe(fs.createWriteStream("./raport_" + newdate+".pdf"));
+
+          const tableArray = {
+           headers: ["Nazwa","sku","sprzedanych","w magazynie", "cena", "cena zakupu", "marża", "dostawca"],
+           rows: dataArr
+         };
+
+            doc1.table( tableArray, {
+
+              columnsSize: [200,75,50,50,50,50,50,50], 
+
+               prepareHeader: () => doc1.font(`${__dirname}/arial.ttf`).fontSize(8),
+               prepareRow: (row, indexColumn, indexRow, rectRow) => {
+               doc1.font(`${__dirname}/arial.ttf`).fontSize(8);
+               indexColumn === 0 && doc1.addBackground(rectRow, (indexRow % 2 ? 'blue' : 'green'), 0.15);
+             },
+             });
+            doc1.end();
+
+
+
+
         })
         .catch(error => {
           console.error(error);
