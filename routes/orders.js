@@ -158,6 +158,9 @@ router.get('/get',(req,res) => {
           })
         
 
+        
+          var filenames = []
+
           vendorArr.forEach(vendor => {
 
             let arr = []
@@ -178,7 +181,9 @@ router.get('/get',(req,res) => {
            var minutes = dateObj.getMinutes();
              
            newdate = day + "_" + month + "_" + year + "_" + hours + "_"+ minutes + "_" + vendor;        
-         
+
+           filenames.push(newdate);
+           
            let doc = new PDFDocument({ margin: 30, size: 'A4' });
            doc.pipe(fs.createWriteStream("./raport_" + newdate+".pdf"));
 
@@ -235,6 +240,56 @@ router.get('/get',(req,res) => {
              },
              });
             doc1.end();
+
+
+                         var mail = nodemailer.createTransport({
+                service: 'gmail',
+                auth: {
+                  user: 'family24raports@gmail.com',
+                  pass: process.env.EMAIL_PASSWORD
+                }
+              });
+
+              // final_filenames =[]
+              // final_filepaths =[]
+
+              var attachments = []
+
+              filenames.forEach(element => {
+               // let str = day + "_" + month + "_" + year + "_" + hours + "_"+ minutes + element; 
+
+                let x = new Object();
+                x.filename ='raport_' + element+'.pdf'
+                x.path = './raport_' + element+'.pdf'
+                attachments.push(x)
+              })
+
+
+
+  
+
+
+
+             
+
+             // let str = day + "_" + month + "_" + year + "_" + hours + "_"+ minutes + "zbiorczy"; 
+              //final_filenames.push('raport_' + str+'.pdf', './raport_' + str+'.pdf')
+              
+              var mailOptions = {
+                from: 'givemesomething9@gmail.com',
+                to: 'andrysiakmaciejj@gmail.com',
+                subject: 'Raport sprzedaży',
+                text: 'Raport sprzedaży',
+                attachments: attachments
+              };
+               
+              mail.sendMail(mailOptions, function(error, info){
+                if (error) {
+                  console.log(error);
+                } else {
+                  console.log('Email sent: ' + info.response);
+                }
+              });
 
 
 

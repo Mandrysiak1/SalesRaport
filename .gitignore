@@ -67,6 +67,8 @@ typings/
 
 *.env
 
+*.pdf
+
 # Yarn Integrity file
 .yarn-integrity
 
