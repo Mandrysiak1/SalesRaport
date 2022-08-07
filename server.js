@@ -5,7 +5,8 @@ const cron = require('node-cron');
 const request = require('supertest');
 
 require('dotenv').config({ path: './crid.env' })
-  
+
+console.log(process.env) // remove this after you've confirmed it working
 
 app.get('/', (req,res) =>{
     console.log("here")
@@ -25,7 +26,7 @@ cron.schedule('0/2 * * * *', function() {
   });
 
   cron.schedule('0 0 * * *', function() {
-    console.log('running a task every minute');
+    console.log('running a task every hour');
     request(app)
   .get('/orders/get')
   .expect(200)
