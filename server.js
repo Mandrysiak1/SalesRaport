@@ -6,8 +6,6 @@ const request = require('supertest');
 
 require('dotenv').config({ path: './crid.env' })
 
-console.log(process.env) // remove this after you've confirmed it working
-
 app.get('/', (req,res) =>{
     console.log("here")
     res.send("hi")

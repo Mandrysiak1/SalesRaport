@@ -1,8 +1,13 @@
 const express = require('express')
 
 const router = express.Router()
+const where = require("lodash.where");
 
-const axios = require('axios');
+const axios = require('axios')
+const util = require( 'util' );
+
+
+
 var mysql = require('mysql');
 
 var nodemailer = require('nodemailer');
@@ -10,16 +15,58 @@ var nodemailer = require('nodemailer');
 
 const fs = require("fs");
 const PDFDocument = require("pdfkit-table");
+const { ellipse } = require('pdfkit-table');
+const { read } = require('pdfkit-table');
+async function xd(sku)
+{
+  var value
+  await new Promise((resolve, reject) => {
+    setTimeout(() => {    
+
+      let params = {
+        "inventory_id": 4745,
+        "filter_sku" : sku };
+  
+      let data = {
+        'method': 'getInventoryProductsList',
+        'parameters': JSON.stringify(params) };
+    
+   
+      axios
+       .post('https://api.baselinker.com/connector.php', data ,{headers:{"X-BLToken":process.env.BASELINKER_API_KEY,'Content-Type': 'multipart/form-data'}})
+       .then(res => {  
+
+        
+        value =  res.data.products[0].id 
+        return value
+
+             })
+       .catch(error => {
+         console.error(error);
+       });
 
 
 
-router.get('/get',(req,res) => {
+
+
+    }, 1000);
+  });
+}
+async function getID(sku)
+{
+
+  var value = await xd(sku)
+  
+  return value
+
+  
+    
+}
+
+router.get('/get',async (req,res) => {
  
  var allFilenames = [];
 
- console.log(process.env) // remove this after you've confirmed it working
-
-// console.log(process.env.DATABASE_PASSWORD)
 
   var con = mysql.createConnection({
     host: "mariadb105.server179088.nazwa.pl",
@@ -31,15 +78,20 @@ router.get('/get',(req,res) => {
 
   var d = new Date();
   d.setDate(d.getDate() - 30);
-  var datastamp =  Math.floor(d.getTime() / 1000)
+ // var datastamp =  Math.floor(d.getTime() / 1000)
 
-  var sql = "select product_name, sku, product_id ,count(*) as total from orders where timestamp > ? group by product_id "
+
+ var datastamp = 1657404000;
+
+  console.log(datastamp)
+
+  var sql = "select product_name, sku, product_id ,count(*) as total from orders where timestamp > ? group by sku "
   var valuse = [
     [datastamp]
   ] 
 
 
-  con.query(sql,[valuse], function (err, sql_result) {
+  con.query(sql,[valuse], async (err, sql_result) => {
     if (err) throw err;
 
     var productIDs = [];
@@ -47,12 +99,21 @@ router.get('/get',(req,res) => {
     sql_result.forEach(element => {
       //console.log("tego: " + element.product_id)
      
-      if(!productIDs.includes(element) && !(typeof element.product_id === 'string' && element.product_id.length === 0) )
+      if(element.product_id ==="")
+      {
+        console.log("ZEPSUTE STRASZNIE: " + element.product_name)
+        element.product_id =  getID(element.sku)
+       // console.log("Naprawione: " + element.product_name + " " + element.product_id)
+      } 
+
+      
+
+      if(!productIDs.includes(element) )
       productIDs.push(element.product_id)
 
     })
 
-    console.log("prids: " +productIDs.length)
+    //console.log("prids: " +productIDs.length)
 
     let params = {
       "inventory_id": 4745,
@@ -69,16 +130,28 @@ router.get('/get',(req,res) => {
         
             var selectedProducts = [];
             var allProducts = [];
+
             sql_result.forEach(element_res => {
         
             if(res.data.products[element_res.product_id]){
 
-              allProducts.push(element_res)
-              if(element_res.total > res.data.products[element_res.product_id].stock.bl_5662 ){
-               
-                selectedProducts.push(element_res)
-                
+              allProducts.push(element_res)              
+              let prod = res.data.products;
+              var findkey = 0; 
+
+              for (let index = 0; index < Object.keys(prod).length; index++) {
+                if(prod[Object.keys(prod)[index]].sku === element_res.sku){
+                  findkey = prod[Object.keys(prod)[index]]
+                }              
               }
+
+              if(findkey != 0){
+                if(element_res.total > findkey.stock.bl_5662 ){
+                  selectedProducts.push(element_res)
+                           
+                }
+              }
+
              }
 
             })
@@ -118,6 +191,10 @@ router.get('/get',(req,res) => {
 
             var dataArrSelected = []
 
+            console.log(selectedProducts.length)
+
+            console.log(allProducts.length)
+            
             selectedProducts.forEach(element => {
 
             if(res.data.products[element.product_id]){
@@ -138,7 +215,8 @@ router.get('/get',(req,res) => {
                 let in_stock= res.data.products[element.product_id].stock.bl_5662
                 let price = res.data.products[element.product_id].prices[4494]
                 let buy_price = (Number.parseFloat(res.data.products[element.product_id].text_fields.extra_field_5072) /1.23).toFixed(2)
-                let margin = ((price - buy_price)/ price * 100).toFixed(2);
+                //let margin = ((price - buy_price)/ price * 100).toFixed(2);
+                let margin = ((price - (Number.parseFloat(buy_price) / 1.23))/ price * 100).toFixed(2);
                 let vendor = res.data.products[element.product_id].text_fields.extra_field_4240 
 
                 let arr = []
@@ -340,7 +418,7 @@ function createPDF(alias, data,allFilenames){
     allFilenames.push(newdate)
 
     const tableArray = {
-      headers: ["Nazwa","SKU","Sprzedanych","W magazynie", "Cena", "Cena zakupu(netto)", "Marża", "Dostawca"],
+      headers: ["Nazwa","SKU","Sprzedanych","W magazynie", "Cena sprzedaży brutto (zł)", "Cena zakupu netto (zł)", "Marża (%)", "Dostawca"],
       rows: data
     };
 
@@ -392,7 +470,7 @@ function sortFunction(a, b) {
        
       
                var data = []
-               var sql = "SELECT orderID FROM orders"
+               var sql = "SELECT DISTINCT orderID FROM orders"
                con.query(sql, function (err, result) {
                  if (err) throw err;
                  
