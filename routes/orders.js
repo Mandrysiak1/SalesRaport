@@ -8,7 +8,8 @@ const util = require( 'util' );
 
 
 
-var mysql = require('mysql');
+//var mysql = require('mysql');
+const mysql = require(`mysql-await`);
 
 var nodemailer = require('nodemailer');
 
@@ -17,10 +18,16 @@ const fs = require("fs");
 const PDFDocument = require("pdfkit-table");
 const { ellipse } = require('pdfkit-table');
 const { read } = require('pdfkit-table');
+const e = require('express');
 async function xd(sku)
 {
-  var value
-  await new Promise((resolve, reject) => {
+  
+}
+async function getID(sku)
+{
+
+  console.log("sku:" +  sku)
+  return new Promise((resolve, reject) => {
     setTimeout(() => {    
 
       let params = {
@@ -35,12 +42,18 @@ async function xd(sku)
       axios
        .post('https://api.baselinker.com/connector.php', data ,{headers:{"X-BLToken":process.env.BASELINKER_API_KEY,'Content-Type': 'multipart/form-data'}})
        .then(res => {  
+        // value =  
+        // console.log("value: " + value)
 
-        
-        value =  res.data.products[0].id 
-        return value
+        if(res.data.products[(Object.keys(res.data.products)[0])]){
+          resolve(res.data.products[(Object.keys(res.data.products)[0])].id)
 
-             })
+        }else{
+          resolve()
+        }
+
+
+        })
        .catch(error => {
          console.error(error);
        });
@@ -49,15 +62,8 @@ async function xd(sku)
 
 
 
-    }, 1000);
+    }, 100);
   });
-}
-async function getID(sku)
-{
-
-  var value = await xd(sku)
-  
-  return value
 
   
     
@@ -68,6 +74,8 @@ router.get('/get',async (req,res) => {
  var allFilenames = [];
 
 
+
+
   var con = mysql.createConnection({
     host: "mariadb105.server179088.nazwa.pl",
     user: "server179088_raportyBL",
@@ -76,12 +84,17 @@ router.get('/get',async (req,res) => {
   });
 
 
+  con.on(`error`, (err) => {
+    console.error(`Connection error ${err.code}`);
+  });
+
+
   var d = new Date();
   d.setDate(d.getDate() - 30);
- // var datastamp =  Math.floor(d.getTime() / 1000)
+  var datastamp =  Math.floor(d.getTime() / 1000)
 
 
- var datastamp = 1657404000;
+  //var datastamp = 1657404000;
 
   console.log(datastamp)
 
@@ -91,29 +104,26 @@ router.get('/get',async (req,res) => {
   ] 
 
 
-  con.query(sql,[valuse], async (err, sql_result) => {
-    if (err) throw err;
-
+  let sql_result = await con.awaitQuery(sql,[valuse])
+  
     var productIDs = [];
 
-    sql_result.forEach(element => {
-      //console.log("tego: " + element.product_id)
+    for(let element of sql_result)
+       {
+
      
       if(element.product_id ==="")
       {
+        
         console.log("ZEPSUTE STRASZNIE: " + element.product_name)
-        element.product_id =  getID(element.sku)
-       // console.log("Naprawione: " + element.product_name + " " + element.product_id)
+        element.product_id  = await getID(element.sku)
+        console.log("Naprawione: " + element.product_name + " " + element.product_id)
       } 
-
-      
 
       if(!productIDs.includes(element) )
       productIDs.push(element.product_id)
 
-    })
-
-    //console.log("prids: " +productIDs.length)
+    }
 
     let params = {
       "inventory_id": 4745,
@@ -135,21 +145,11 @@ router.get('/get',async (req,res) => {
         
             if(res.data.products[element_res.product_id]){
 
-              allProducts.push(element_res)              
-              let prod = res.data.products;
-              var findkey = 0; 
-
-              for (let index = 0; index < Object.keys(prod).length; index++) {
-                if(prod[Object.keys(prod)[index]].sku === element_res.sku){
-                  findkey = prod[Object.keys(prod)[index]]
-                }              
-              }
-
-              if(findkey != 0){
-                if(element_res.total > findkey.stock.bl_5662 ){
-                  selectedProducts.push(element_res)
-                           
-                }
+              allProducts.push(element_res)
+              if(element_res.total > res.data.products[element_res.product_id].stock.bl_5662 ){
+               
+                selectedProducts.push(element_res)
+                
               }
 
              }
@@ -177,8 +177,8 @@ router.get('/get',async (req,res) => {
                 
                 let in_stock= res.data.products[element.product_id].stock.bl_5662
                 let price = res.data.products[element.product_id].prices[4494]
-                let buy_price = (Number.parseFloat(res.data.products[element.product_id].text_fields.extra_field_5072) /1.23).toFixed(2)
-                let margin = ((price - buy_price)/ price * 100).toFixed(2);
+                let buy_price = (Number.parseFloat(res.data.products[element.product_id].text_fields.extra_field_5072)).toFixed(2)
+                let margin = ((price - buy_price *1.23)/ price * 100).toFixed(2);
                 let vendor = res.data.products[element.product_id].text_fields.extra_field_4240 
 
                 let arr = []
@@ -188,6 +188,7 @@ router.get('/get',async (req,res) => {
             })  
 
             dataArrAll.sort(sortFunction)
+
 
             var dataArrSelected = []
 
@@ -214,9 +215,8 @@ router.get('/get',async (req,res) => {
                 
                 let in_stock= res.data.products[element.product_id].stock.bl_5662
                 let price = res.data.products[element.product_id].prices[4494]
-                let buy_price = (Number.parseFloat(res.data.products[element.product_id].text_fields.extra_field_5072) /1.23).toFixed(2)
-                //let margin = ((price - buy_price)/ price * 100).toFixed(2);
-                let margin = ((price - (Number.parseFloat(buy_price) / 1.23))/ price * 100).toFixed(2);
+                let buy_price = (Number.parseFloat(res.data.products[element.product_id].text_fields.extra_field_5072)).toFixed(2)
+                let margin = ((price - buy_price *1.23)/ price * 100).toFixed(2);
                 let vendor = res.data.products[element.product_id].text_fields.extra_field_4240 
 
                 let arr = []
@@ -228,9 +228,9 @@ router.get('/get',async (req,res) => {
           var vendorArr = []
 
           dataArrSelected.forEach(row => {
-              if(!vendorArr.includes(row[7]))
+              if(!vendorArr.includes(row[7].toLowerCase()))
               {
-                vendorArr.push(row[7])
+                vendorArr.push(row[7].toLowerCase())
               }
           })
 
@@ -241,16 +241,18 @@ router.get('/get',async (req,res) => {
               
                 dataArrSelected.forEach(rows => {
 
-                    if(rows[7] == vendor)
+                    if(rows[7].toLowerCase() == vendor.toLowerCase())
                     {
                       selectedVendorData.push(rows)
                     }                   
                 })
 
+                selectedVendorData.sort(sortFunction)
                 createPDF(vendor,selectedVendorData,allFilenames)
                    
           })
 
+          dataArrSelected.sort(sortfunctionVendor)
           createPDF("zbiorczy",dataArrSelected,allFilenames)
           createPDF("ogólny",dataArrAll,allFilenames)
        
@@ -270,7 +272,7 @@ router.get('/get',async (req,res) => {
           console.error(error);
         });
 
-  });
+ // });
 
   res.send("xd");
 
@@ -366,13 +368,14 @@ function sendMail(attachments)
 {
   var dateObj = new Date();
 
-  var month = dateObj.getUTCMonth() + 1; //months from 1-12
-  var day = dateObj.getUTCDate();
+  var month = ((dateObj.getUTCMonth() + 1) < 10?'0':'') + dateObj.getUTCMonth() ; //months from 1-12
+  var day = ((dateObj.getUTCDate()) < 10?'0':'') + dateObj.getUTCDate()
+  
   var year = dateObj.getUTCFullYear();
   var hours = (dateObj.getHours()<10?'0':'') + dateObj.getHours()
   var minutes = (dateObj.getMinutes()<10?'0':'') + dateObj.getMinutes()
-  let newdate = day + "_" + month + "_" + year + "_" + hours + "_"+ minutes + "_"
-    var mail = nodemailer.createTransport({
+  let newdate = day + "." + month + "." + year + " godzina: " + hours + ":"+ minutes
+      var mail = nodemailer.createTransport({
       service: 'gmail',
       auth: {
         user: 'family24raports@gmail.com',
@@ -441,6 +444,15 @@ function sortFunction(a, b) {
   }
   else {
       return (a[2] > b[2]) ? -1 : 1;
+  }
+}
+
+function sortfunctionVendor(a, b) {
+  if (a[7].toLowerCase() === b[7].toLowerCase()) {
+      return 0;
+  }
+  else {
+      return (a[7].toLowerCase() > b[7].toLowerCase()) ? -1 : 1;
   }
 }
  async function asyncCall(index,con)
