@@ -3,11 +3,18 @@ const express = require('express')
 const app = express()
 const cron = require('node-cron');
 const request = require('supertest');
+const puppeteer = require('puppeteer');
+const open = require('open')
 
 require('dotenv').config({ path: './crid.env' })
 
-app.get('/', (req,res) =>{
+app.get('/',async (  req,res) =>{
     console.log("here")
+
+     open( 'https://google.com', function (err) {
+      if ( err ) throw err;    
+    });
+    
     res.send("hi")
 })
 
