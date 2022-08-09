@@ -9,7 +9,7 @@ const PDFDocument = require("pdfkit-table");
 
 async function getID(sku) {
 
-  console.log("sku:" + sku)
+  //console.log("sku:" + sku)
   return new Promise((resolve, reject) => {
     setTimeout(() => {
 
@@ -72,7 +72,7 @@ router.get('/get', async (req, res) => {
 
   //var datastamp = 1657404000;
 
-  console.log(datastamp)
+  //console.log(datastamp)
 
   var sql = "select product_name, sku, product_id ,count(*) as total from orders where timestamp > ? group by sku "
   var valuse = [
@@ -88,9 +88,9 @@ router.get('/get', async (req, res) => {
 
     if (element.product_id === "") {
 
-      console.log("ZEPSUTE STRASZNIE: " + element.product_name)
+     // console.log("ZEPSUTE STRASZNIE: " + element.product_name)
       element.product_id = await getID(element.sku)
-      console.log("Naprawione: " + element.product_name + " " + element.product_id)
+     console.log("Naprawione: " + element.product_name + " " + element.product_id)
     }
 
     if (!productIDs.includes(element))
@@ -168,9 +168,9 @@ router.get('/get', async (req, res) => {
 
       var dataArrSelected = []
 
-      console.log(selectedProducts.length)
+     // console.log(selectedProducts.length)
 
-      console.log(allProducts.length)
+     // console.log(allProducts.length)
 
       selectedProducts.forEach(element => {
 
@@ -203,7 +203,7 @@ router.get('/get', async (req, res) => {
             arr = [product_name, sku+ "\n" + ean, sold, in_stock, price, buy_price, margin, vendor]
             dataArrSelected.push(arr)
           } else {
-            console.log(product_name = res.data.products[element.product_id].text_fields.name + " isActive: " + isActive)
+           // console.log(product_name = res.data.products[element.product_id].text_fields.name + " isActive: " + isActive)
           }
 
         }
@@ -450,7 +450,7 @@ async function asyncCall(index, con) {
 
       var datastamp = Math.floor(d.getTime() / 1000)
 
-      console.log("datastamp: " + datastamp)
+      //console.log("datastamp: " + datastamp)
 
       let params = {
         "date_confirmed_from": datastamp,
@@ -514,7 +514,7 @@ async function asyncCall(index, con) {
           });
           resolve()
 
-          console.log("wykonano " + index)
+         // console.log("wykonano " + index)
 
 
         })
