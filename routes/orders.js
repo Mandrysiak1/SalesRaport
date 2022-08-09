@@ -245,7 +245,7 @@ router.get('/get', async (req, res) => {
         attachments.push(x)
       })
 
-      //sendMail(attachments)
+      sendMail(attachments)
 
     })
     .catch(error => {
