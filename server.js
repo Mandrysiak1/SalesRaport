@@ -11,7 +11,7 @@ app.get('/', (req,res) =>{
     res.send("hi")
 })
 
-cron.schedule('0/2 * * * *', function() {
+cron.schedule('0/30 * * * *', function() {
     console.log('running a task every 2min ');
   
     request(app)
@@ -23,7 +23,7 @@ cron.schedule('0/2 * * * *', function() {
   });
   });
 
-  cron.schedule('0 0 * * *', function() {
+  cron.schedule('0 10 * * *', function() {
     console.log('running a task every hour');
     request(app)
   .get('/orders/get')
