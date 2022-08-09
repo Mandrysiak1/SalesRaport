@@ -9,10 +9,8 @@ require('dotenv').config({ path: './crid.env' })
 
 app.get('/',async (  req,res) =>{
     console.log("here")
-
-     open( 'https://google.com', function (err) {
-      if ( err ) throw err;    
-    });
+    console.log(req.query.orderid)
+ 
     
     res.send("hi")
 })
