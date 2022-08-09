@@ -11,7 +11,7 @@ app.get('/', (req,res) =>{
     res.send("hi")
 })
 
-cron.schedule('0/30 * * * *', function() {
+cron.schedule('00 59 * * * *', function() {
     console.log('running a task every 2min ');
   
     request(app)
