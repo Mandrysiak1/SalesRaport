@@ -20,6 +20,7 @@
     "open": "^8.4.0",
     "pdfkit-table": "^0.1.99",
     "puppeteer": "^16.1.0",
+    "query-string": "^7.1.1",
     "supertest": "^6.2.4",
     "uuid": "^8.3.2"
   },

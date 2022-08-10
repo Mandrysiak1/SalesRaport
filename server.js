@@ -1,9 +1,13 @@
+// import websockets from './websockets';
+const idk  =require ('./websockets');
 
 const express = require('express')
 const app = express()
 const cron = require('node-cron');
 const request = require('supertest');
 const open = require('open')
+
+
 
 require('dotenv').config({ path: './crid.env' })
 
@@ -42,4 +46,6 @@ const ordersRouter = require("./routes/orders")
 
 app.use("/orders", ordersRouter)
 const Port = process.env.PORT  || 8080
-app.listen(Port,() => console.log(`serwer start ${Port}`))
+
+const server = app.listen(Port,() => console.log(`serwer start ${Port}`))
+idk.idk(server);
