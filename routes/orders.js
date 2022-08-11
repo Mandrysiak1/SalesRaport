@@ -72,7 +72,7 @@ router.post('/getIDs', async (req,res) =>{
   
   let params = {
     "inventory_id": 4745,
-    "products": req.query.products
+    "products": req.body.products
   };
 
   let data = {
