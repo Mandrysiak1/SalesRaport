@@ -7,6 +7,8 @@ const cron = require('node-cron');
 const request = require('supertest');
 const open = require('open')
 
+var bodyParser = require('body-parser')
+
 
 
 require('dotenv').config({ path: './crid.env' })
@@ -18,7 +20,14 @@ app.get('/',async (  req,res) =>{
     
     res.send("hi")
 })
-app.use(require('body-parser').json());
+app.use(express.urlencoded());
+
+
+app.get('/raport', (req, res) => {
+  res.sendFile(__dirname + '/index.html');
+});
+
+
 
 cron.schedule('00 59 * * * *', function() {
     console.log('running addTASK ');
@@ -32,10 +41,10 @@ cron.schedule('00 59 * * * *', function() {
   });
   });
 
-  cron.schedule('0 10 * * *', function() {
+  cron.schedule('25 19 * * 4', function() {
     console.log('Running getTask');
     request(app)
-  .get('/orders/get')
+  .post('/orders/get')
   .expect(200)
   .end(function(err, res) {
     if (err) throw err;

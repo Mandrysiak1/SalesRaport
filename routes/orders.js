@@ -3,9 +3,12 @@ const router = express.Router()
 const axios = require('axios')
 const mysql = require(`mysql-await`);
 var nodemailer = require('nodemailer');
+router.use(require('body-parser').json());
 
 const fs = require("fs");
 const PDFDocument = require("pdfkit-table");
+
+var raportDays=14;
 
 async function getID(sku) {
 
@@ -66,31 +69,12 @@ async function getLastPurchase(product_id,con){
   return sql_result[0].timestamp;
 }
 
-router.post('/getIDs', async (req,res) =>{
+
+router.post('/get', async (req, res) => {
+
+ console.log(req.body.days)
+  raportDays = req.body.days == null ? raportDays : req.body.days  
   
-  console.log(req.body)
-  
-  let params = {
-    "inventory_id": 4745,
-    "products": req.body.products
-  };
-
-  let data = {
-    'method': 'getInventoryProductsData',
-    'parameters': JSON.stringify(params)
-  };
-
-
- var resp = await axios
-    .post('https://api.baselinker.com/connector.php', data, { headers: { "X-BLToken": process.env.BASELINKER_API_KEY, 'Content-Type': 'multipart/form-data' } })
-   
-
-    res.send(resp)
-
-})
-
-router.get('/get', async (req, res) => {
-
   var allFilenames = [];
 
   var con = mysql.createConnection({
@@ -107,7 +91,7 @@ router.get('/get', async (req, res) => {
 
 
   var d = new Date();
-  d.setDate(d.getDate() - 14);
+  d.setDate(d.getDate() - raportDays);
   var datastamp = Math.floor(d.getTime() / 1000)
   //var datastamp = 1657404000;
 
@@ -396,7 +380,7 @@ router.get('/get', async (req, res) => {
       console.error(error);
     });
 
-  res.send("xd");
+  res.send("OK");
 
 });
 
@@ -502,11 +486,15 @@ function sendMail(attachments) {
       pass: process.env.EMAIL_PASSWORD
     }
   });
+  var maillist = [
+    'andrysiakmaciejj@gmail.com',
+    'adriannabachulska@gmail.com',
 
+  ];
 
   var mailOptions = {
     from: 'givemesomething9@gmail.com',
-    to: 'andrysiakmaciejj@gmail.com',
+    to: maillist,
     subject: 'Raport sprzedaży ' + newdate,
     text: 'Raport sprzedaży z dnia ' + newdate,
     attachments: attachments
