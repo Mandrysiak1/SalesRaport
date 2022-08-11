@@ -18,6 +18,7 @@ app.get('/',async (  req,res) =>{
     
     res.send("hi")
 })
+app.use(require('body-parser').json());
 
 cron.schedule('00 59 * * * *', function() {
     console.log('running addTASK ');
