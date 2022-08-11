@@ -68,7 +68,7 @@ async function getLastPurchase(product_id,con){
 
 router.post('/getIDs', async (req,res) =>{
   
-  console.log(req.query)
+  console.log(req.body)
   
   let params = {
     "inventory_id": 4745,
