@@ -66,7 +66,7 @@ async function getLastPurchase(product_id,con){
   return sql_result[0].timestamp;
 }
 
-router.get('/getIDs', async (req,res) =>{
+router.post('/getIDs', async (req,res) =>{
   
   console.log(req.query)
   
