@@ -41,7 +41,7 @@ cron.schedule('00 59 * * * *', function() {
   });
   });
 
-  cron.schedule('25 19 * * 4', function() {
+  cron.schedule('00 18 * * 0', function() {
     console.log('Running getTask');
     request(app)
   .post('/orders/get')

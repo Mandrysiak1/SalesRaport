@@ -488,8 +488,8 @@ function sendMail(attachments) {
   });
   var maillist = [
     'andrysiakmaciejj@gmail.com',
-    'adriannabachulska@gmail.com',
-
+    'akrzypkowska@kubartech.pl',
+    'gkrzypkowski@kubartech.pl'
   ];
 
   var mailOptions = {
