@@ -6,7 +6,6 @@ var nodemailer = require('nodemailer');
 
 const fs = require("fs");
 const PDFDocument = require("pdfkit-table");
-const { isBooleanObject } = require('util/types');
 
 async function getID(sku) {
 
@@ -66,6 +65,29 @@ async function getLastPurchase(product_id,con){
   //console.log(sql_result[0])
   return sql_result[0].timestamp;
 }
+
+router.get('/getIDs', async (req,res) =>{
+  
+  console.log(req.query)
+  
+  let params = {
+    "inventory_id": 4745,
+    "products": req.query.products
+  };
+
+  let data = {
+    'method': 'getInventoryProductsData',
+    'parameters': JSON.stringify(params)
+  };
+
+
+ var resp = await axios
+    .post('https://api.baselinker.com/connector.php', data, { headers: { "X-BLToken": process.env.BASELINKER_API_KEY, 'Content-Type': 'multipart/form-data' } })
+   
+
+    res.send(resp)
+
+})
 
 router.get('/get', async (req, res) => {
 
