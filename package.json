@@ -18,6 +18,7 @@
     "node-cron": "^3.0.1",
     "nodemailer": "^6.7.7",
     "open": "^8.4.0",
+    "override-console-log": "^1.1.1",
     "pdfkit-table": "^0.1.99",
     "puppeteer": "^16.1.0",
     "query-string": "^7.1.1",

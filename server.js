@@ -57,5 +57,5 @@ const ordersRouter = require("./routes/orders")
 app.use("/orders", ordersRouter)
 const Port = process.env.PORT  || 8080
 
-const server = app.listen(Port,() => console.log(`serwer start ${Port}`))
+const server = app.listen(Port,() => console.log(`Server start on port: ${Port}`))
 

@@ -3,78 +3,25 @@ const router = express.Router()
 const axios = require('axios')
 const mysql = require(`mysql-await`);
 var nodemailer = require('nodemailer');
-router.use(require('body-parser').json());
-
+var { log, logI, logD, logE, logConfig } = require('override-console-log');
 const fs = require("fs");
 const PDFDocument = require("pdfkit-table");
+router.use(require('body-parser').json());
 
-var raportDays=14;
-
-async function getID(sku) {
-
-  //console.log("sku:" + sku)
-  return new Promise((resolve, reject) => {
-    setTimeout(() => {
-
-      let params = {
-        "inventory_id": 4745,
-        "filter_sku": sku
-      };
-
-      let data = {
-        'method': 'getInventoryProductsList',
-        'parameters': JSON.stringify(params)
-      };
+var raportDays = 14;
 
 
-      axios
-        .post('https://api.baselinker.com/connector.php', data, { headers: { "X-BLToken": process.env.BASELINKER_API_KEY, 'Content-Type': 'multipart/form-data' } })
-        .then(res => {
+router.get('/addall', async (req, res) => {
 
-          if (res.data.products[(Object.keys(res.data.products)[0])]) {
-            resolve(res.data.products[(Object.keys(res.data.products)[0])].id)
-
-          } else {
-            resolve()
-          }
-
-
-        })
-        .catch(error => {
-          console.error(error);
-        });
-
-    }, 100);
-  });
-
-
-
-}
-
-async function getLastPurchase(product_id,con){
-
-
-
-  //console.log("oid: " + product_id)
-
-  var sql = "SELECT MAX(timestamp) as timestamp from orders where product_id = ? "
-  var valuse = [
-    [product_id]
-  ]
-
-
-  let sql_result = await con.awaitQuery(sql, [valuse])
-
-  //console.log(sql_result[0])
-  return sql_result[0].timestamp;
-}
-
+  await processGet()
+  res.send("Addall");
+})
 
 router.post('/get', async (req, res) => {
 
- console.log(req.body.days)
-  raportDays = req.body.days == null ? raportDays : req.body.days  
-  
+  console.log("Data from rq: " + req.body.days)
+  raportDays = req.body.days == null ? raportDays : req.body.days
+
   var allFilenames = [];
 
   var con = mysql.createConnection({
@@ -93,87 +40,50 @@ router.post('/get', async (req, res) => {
   var d = new Date();
   d.setDate(d.getDate() - raportDays);
   var datastamp = Math.floor(d.getTime() / 1000)
-  //var datastamp = 1657404000;
 
   var selectedProducts = [];
   var allProducts = [];
   var productIDs = [];
-  var zeroStockProductsIDs = []
-  let params1 = {
+
+  let init_params = {
     "inventory_id": 4745,
   };
 
-  let data1 = {
+  let init_data = {
     'method': 'getInventoryProductsStock',
-    'parameters': JSON.stringify(params1)
+    'parameters': JSON.stringify(init_params)
   };
-   var initdata = await axios
-    .post('https://api.baselinker.com/connector.php', data1, { headers: { "X-BLToken": process.env.BASELINKER_API_KEY, 'Content-Type': 'multipart/form-data' } })
+  var initdata = await axios
+    .post('https://api.baselinker.com/connector.php', init_data, { headers: { "X-BLToken": process.env.BASELINKER_API_KEY, 'Content-Type': 'multipart/form-data' } })
 
 
-    //console.log(initdata)
+  var initlenght = Object.keys(initdata.data.products).length
+  for (let index = 0; index < initlenght; index++) {
 
-    var con = mysql.createConnection({
-      host: "mariadb105.server179088.nazwa.pl",
-      user: "server179088_raportyBL",
-      password: process.env.DATABASE_PASSWORD,
-      database: "server179088_raportyBL"
-    });
-    
+    let product = initdata.data.products[Object.keys(initdata.data.products)[index]]
 
-    var initlenght = Object.keys(initdata.data.products).length
-    
-   // console.log(initlenght)
-
-    var con = mysql.createConnection({
-      host: "mariadb105.server179088.nazwa.pl",
-      user: "server179088_raportyBL",
-      password: process.env.DATABASE_PASSWORD,
-      database: "server179088_raportyBL"
-    });
-
-    for (let index = 0; index < initlenght; index++) {
-        
-     let product =  initdata.data.products[Object.keys(initdata.data.products)[index]]
-
-   // console.log(product)
-
-      if(product.stock.bl_5662 === 0)
-      {
-        productIDs.push(product.product_id)
-        var obj = new Object()
-        obj.product_id = product.product_id
-        obj.timestamp = 0;
-        obj.timestamp = await getLastPurchase(product.product_id,con)
-        selectedProducts.push(obj)
-      }
-    
-      //console.log(productIDs.length)
-
-      
+    if (product.stock.bl_5662 === 0) {
+      productIDs.push(product.product_id)
+      var obj = new Object()
+      obj.product_id = product.product_id
+      obj.timestamp = 0;
+      obj.timestamp = await getLastPurchase(product.product_id, con)
+      selectedProducts.push(obj)
     }
-
+  }
 
   var sql = "select product_name, sku, product_id, MAX(timestamp) as timestamp ,count(*) as total from orders where timestamp > ? group by sku "
   var valuse = [
     [datastamp]
   ]
 
-
   let sql_result = await con.awaitQuery(sql, [valuse])
-
-  
-
-
 
   for (let element of sql_result) {
 
-
+    //fixing broken orders to get allpossible IDs
     if (element.product_id === "") {
-
-     // console.log("ZEPSUTE STRASZNIE: " + element.product_name)
-     element.product_id = await getID(element.sku)
-     //console.log("Naprawione: " + element.product_name + " " + element.product_id)
+      element.product_id = await getID(element.sku)
     }
 
     if (!productIDs.includes(element))
@@ -198,16 +108,13 @@ router.post('/get', async (req, res) => {
     .post('https://api.baselinker.com/connector.php', data, { headers: { "X-BLToken": process.env.BASELINKER_API_KEY, 'Content-Type': 'multipart/form-data' } })
     .then(res => {
 
-      
-
-
       sql_result.forEach(element_res => {
 
         if (res.data.products[element_res.product_id]) {
 
           allProducts.push(element_res)
 
-          if (element_res.total > res.data.products[element_res.product_id].stock.bl_5662 && (selectedProducts.some(e=>(e.product_id === element_res.product_id).length ==0 ))) {
+          if (element_res.total > res.data.products[element_res.product_id].stock.bl_5662 && (selectedProducts.some(e => (e.product_id === element_res.product_id).length == 0))) {
 
             selectedProducts.push(element_res)
 
@@ -231,17 +138,9 @@ router.post('/get', async (req, res) => {
 
           var month = ((a.getUTCMonth() + 1) < 10 ? '0' : '') + (a.getUTCMonth() + 1); //months from 1-12
           var day = ((a.getUTCDate()) < 10 ? '0' : '') + a.getUTCDate()
-        
           var year = a.getUTCFullYear();
-
-          // var months = ['01','02','03','04','05','06','07','08','09','10','11','12'];
-
           let timestamp = day + "." + month + "." + year;
-
-         // let timestamp = a.getDate() + "." + months[a.getMonth()]; + "."+ a.getUTCFullYear()
-
           let sold = 0
-
           sql_result.forEach(el => {
 
             if (el.product_id == element.product_id) {
@@ -256,7 +155,7 @@ router.post('/get', async (req, res) => {
           let vendor = res.data.products[element.product_id].text_fields.extra_field_4240
 
           let arr = []
-          arr = [product_name, sku+ "\n" + ean, sold, in_stock, price, buy_price, margin, vendor,timestamp]
+          arr = [product_name, sku + "\n" + ean, sold, in_stock, price, buy_price, margin, vendor, timestamp]
           dataArrAll.push(arr)
         }
       })
@@ -266,12 +165,7 @@ router.post('/get', async (req, res) => {
 
       var dataArrSelected = []
 
-     // console.log(selectedProducts.length)
-
-     // console.log(allProducts.length)
-
       selectedProducts.forEach(element => {
-       // console.log(element)
 
         if (res.data.products[element.product_id]) {
 
@@ -282,33 +176,22 @@ router.post('/get', async (req, res) => {
             let product_name = res.data.products[element.product_id].text_fields.name
             let sku = res.data.products[element.product_id].sku
             let ean = res.data.products[element.product_id].ean
-            let temp_timestamp = element.timestamp 
-            
-            temp_timestamp =  temp_timestamp === null ? 0 : temp_timestamp;
+            let temp_timestamp = element.timestamp
 
-
-            //console.log(temp_timestamp)
+            temp_timestamp = temp_timestamp === null ? 0 : temp_timestamp;
 
             let timestamp = 0
-            if(temp_timestamp != 0){
+            if (temp_timestamp != 0) {
               let a = new Date(temp_timestamp * 1000)
 
               var month = ((a.getUTCMonth() + 1) < 10 ? '0' : '') + (a.getUTCMonth() + 1); //months from 1-12
               var day = ((a.getUTCDate()) < 10 ? '0' : '') + a.getUTCDate()
-            
-              var year = a.getUTCFullYear();
-               timestamp = day + "." + month + "." + year;
-            }else{
-             // console.log("sku: " + sku)
-              timestamp ="przed 08.05.2022"
-            }
-    
 
-            //console.log(element)
-  
-            // var months = ['01','02','03','04','05','06','07','08','09','10','11','12'];
-  
-           
+              var year = a.getUTCFullYear();
+              timestamp = day + "." + month + "." + year;
+            } else {
+              timestamp = "przed 08.05.2022"
+            }
 
             let sold = 0
 
@@ -319,7 +202,6 @@ router.post('/get', async (req, res) => {
               }
             })
 
-            // console.log(res.data.products[element.product_id].text_fields)
             let in_stock = res.data.products[element.product_id].stock.bl_5662
             let price = res.data.products[element.product_id].prices[4494]
             let buy_price = (Number.parseFloat(res.data.products[element.product_id].text_fields.extra_field_5072)).toFixed(2)
@@ -327,10 +209,10 @@ router.post('/get', async (req, res) => {
             let vendor = res.data.products[element.product_id].text_fields.extra_field_4240
 
             let arr = []
-            arr = [product_name, sku+ "\n" + ean, sold, in_stock, price, buy_price, margin, vendor,timestamp]
+            arr = [product_name, sku + "\n" + ean, sold, in_stock, price, buy_price, margin, vendor, timestamp]
             dataArrSelected.push(arr)
           } else {
-           // console.log(product_name = res.data.products[element.product_id].text_fields.name + " isActive: " + isActive)
+            // console.log(product_name = res.data.products[element.product_id].text_fields.name + " isActive: " + isActive)
           }
 
         }
@@ -439,7 +321,7 @@ router.get('/add', (req, res) => {
             for (let index = 0; index < quantity; index++) {
 
               if (!data.includes(orderID)) {
-                console.log("dodano: " + productName + " : " + sku);
+                console.log("Added: " + productName + " sku: " + sku + "orderID: " + orderID);
 
                 var sql = "INSERT INTO orders (orderID,product_id,product_name, sku, timestamp ) VALUES ( ?)"
                 var valuse = [
@@ -455,9 +337,7 @@ router.get('/add', (req, res) => {
                 });
               }
             }
-
           }
-
         }
       });
 
@@ -529,24 +409,24 @@ function createPDF(alias, data, allFilenames) {
   allFilenames.push(newdate)
 
   const tableArray = {
-    headers: [ 
-    {label:"Nazwa produktu",  headerAlign: "center" },
-    {label:"SKU/EAN",headerAlign: "center" },
-    {label:"Ilość sprzedanych",align: "center", headerAlign: "center" },
-    {label:"Ilość w magazynie", align: "center", headerAlign: "center" },
-    {label:"Cena sprzedaży brutto (zł)", align: "center", headerAlign: "center" },
-    {label:"Cena zakupu netto (zł)",align: "center",  headerAlign: "center" },
-    {label:"Marża (%)", align: "center", headerAlign: "center" },
-    {label:"Dostawca", align: "center", headerAlign: "center" },
-    {label:"Ostatnia sprzedaż", align: "center", headerAlign: "center" }
+    headers: [
+      { label: "Nazwa produktu", headerAlign: "center" },
+      { label: "SKU/EAN", headerAlign: "center" },
+      { label: "Ilość sprzedanych", align: "center", headerAlign: "center" },
+      { label: "Ilość w magazynie", align: "center", headerAlign: "center" },
+      { label: "Cena sprzedaży brutto (zł)", align: "center", headerAlign: "center" },
+      { label: "Cena zakupu netto (zł)", align: "center", headerAlign: "center" },
+      { label: "Marża (%)", align: "center", headerAlign: "center" },
+      { label: "Dostawca", align: "center", headerAlign: "center" },
+      { label: "Ostatnia sprzedaż", align: "center", headerAlign: "center" }
 
-   ],
+    ],
     rows: data
   };
 
   doc.table(tableArray, {
 
-    columnsSize: [160, 65, 40, 40, 40, 40, 40, 50,50],
+    columnsSize: [160, 65, 40, 40, 40, 40, 40, 50, 50],
 
     prepareHeader: () => doc.font(`${__dirname}/arial.ttf`).fontSize(8),
     prepareRow: (row, indexColumn, indexRow, rectRow) => {
@@ -568,7 +448,7 @@ function sortFunction(a, b) {
 
 function sortfunctionVendor(a, b) {
   if (a[7].toLowerCase() === b[7].toLowerCase()) {
-    return sortFunction(a,b);
+    return sortFunction(a, b);
   }
   else {
     return (a[7].toLowerCase() > b[7].toLowerCase()) ? -1 : 1;
@@ -597,9 +477,6 @@ async function asyncCall(index, con) {
       axios
         .post('https://api.baselinker.com/connector.php', data, { headers: { "X-BLToken": process.env.BASELINKER_API_KEY, 'Content-Type': 'multipart/form-data' } })
         .then(response => {
-
-
-         // console.log(response.data)
           var data = []
           var sql = "SELECT DISTINCT orderID FROM orders"
           con.query(sql, function (err, result) {
@@ -614,9 +491,6 @@ async function asyncCall(index, con) {
               var timestamp = response.data.orders[index].date_confirmed;
               var orderID = Number.parseInt(response.data.orders[index].order_id);
 
-             // console.log(orderID)
-
-
               for (let i = 0; i < response.data.orders[index].products.length; i++) {
 
                 var productID = response.data.orders[index].products[i].product_id
@@ -626,11 +500,9 @@ async function asyncCall(index, con) {
 
 
                 for (let index = 0; index < quantity; index++) {
-               //  console.log(data.filter(el => el == orderID))
-                console.log(orderID)
 
                   if (!data.includes(orderID)) {
-                    console.log("dodano: " + productName + " : " + sku);
+                    console.log("Added: " + productName + " sku: " + sku + "orderID: " + orderID);
 
                     var sql = "INSERT INTO orders (orderID,product_id,product_name, sku, timestamp ) VALUES ( ?)"
                     var valuse = [
@@ -647,13 +519,11 @@ async function asyncCall(index, con) {
                 }
 
               }
-              //console.log(index)
-
             }
           });
           resolve()
 
-          console.log("wykonano " + index)
+          console.log("Addall iteratios:  " + index)
 
 
         })
@@ -674,18 +544,64 @@ async function processGet() {
     database: "server179088_raportyBL"
   });
 
-  for (let index = 1613; index < 12 * 30 *7; index++) {
-
+  for (let index = 0; index < 12 * 30 * 7; index++) {
     await asyncCall(index, con)
   }
   con.end()
 }
 
-router.get('/addall', async (req, res) => {
 
-  await processGet()
-  res.send("Addall");
-})
 
+async function getID(sku) {
+
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+
+      let params = {
+        "inventory_id": 4745,
+        "filter_sku": sku
+      };
+
+      let data = {
+        'method': 'getInventoryProductsList',
+        'parameters': JSON.stringify(params)
+      };
+
+
+      axios
+        .post('https://api.baselinker.com/connector.php', data, { headers: { "X-BLToken": process.env.BASELINKER_API_KEY, 'Content-Type': 'multipart/form-data' } })
+        .then(res => {
+
+          if (res.data.products[(Object.keys(res.data.products)[0])]) {
+            resolve(res.data.products[(Object.keys(res.data.products)[0])].id)
+
+          } else {
+            resolve()
+          }
+
+
+        })
+        .catch(error => {
+          console.error(error);
+        });
+
+    }, 100);
+  });
+
+
+
+}
+
+async function getLastPurchase(product_id, con) {
+
+  var sql = "SELECT MAX(timestamp) as timestamp from orders where product_id = ? "
+  var valuse = [
+    [product_id]
+  ]
+
+  let sql_result = await con.awaitQuery(sql, [valuse])
+
+  return sql_result[0].timestamp;
+}
 
 module.exports = router
