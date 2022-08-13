@@ -53,8 +53,10 @@ cron.schedule('00 59 * * * *', function() {
   });
 
 const ordersRouter = require("./routes/orders")
+const shimpents = require("./routes/shipments")
 
 app.use("/orders", ordersRouter)
+app.use("/shipments",shimpents)
 const Port = process.env.PORT  || 8080
 
 const server = app.listen(Port,() => console.log(`Server start on port: ${Port}`))
