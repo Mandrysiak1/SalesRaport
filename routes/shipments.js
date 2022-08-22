@@ -14,7 +14,7 @@ router.get('/get', async (req, res) => {
 
 router.get('/execute', async (req, res) => {
 
-  let orderID = 51983622
+  let orderID = 51857359
 
   //mark package with "api" in extrafield1
   //create all nessesery packages
@@ -24,13 +24,13 @@ router.get('/execute', async (req, res) => {
 
   let orderDetails =  await getOrderDetails(orderID)
 
- // console.log(orderDetails.orders[0].products)
+ console.log(orderDetails)
 
 
 
 
   //await markOrderWithStar(orderID)
-  await createPackages(orderID,orderDetails)
+ // await createPackages(orderID,orderDetails)
   //await unmarkOrderWithStar(orderID)
   //await moveOrderToProperCategory(orderID,orderDetails.order_source)
   //await sendEmail(orderID)
@@ -50,7 +50,7 @@ async function createPackages(orderID,orderDetails) {
 //calculate insurance
 //if not paczkomaty prepare "package_fields"
 
-  
+ // checkCourier(fields,orderDetails)
 
   let fields = []
   let package_fields = []
@@ -120,8 +120,82 @@ async function createPackages(orderID,orderDetails) {
 
 }
 
-function checkIfCod(fields,orderDetails)
-{
+function checkCourier(fields,orderDetails){
+
+
+  if(orderDetails.orders[0].order_source === 'allegro'){
+    if(orderDetails.orders[0].delivery_method === 'Allegro Paczkomaty InPost'){
+      //ok
+    }else if(orderDetails.orders[0].delivery_method === 'Allegro miniKurier24 InPost'){
+      //ok
+    }else if(orderDetails.orders[0].delivery_method === 'Allegro Kurier DPD' 
+          || orderDetails.orders[0].delivery_method === 'Allegro Kurier DPD pobranie'
+          || orderDetails.orders[0].delivery_method === 'Allegro Odbiór w Punkcie DPD Pickup' 
+          || orderDetails.orders[0].delivery_method === 'Allegro Odbiór w Punkcie DPD Pickup pobranie'){
+      //ID = 9685250
+
+    }else if(orderDetails.orders[0].delivery_method === 'Allegro One Box'){
+
+    }else if(orderDetails.orders[0].delivery_method === 'Allegro Kurier UPS'){
+       //ID = 9685251
+
+
+    }else if(orderDetails.orders[0].delivery_method === 'Allegro Odbiór w Punkcie UPS'){
+
+    }else{
+      //TODO:
+    }
+
+  }else if(orderDetails.orders[0].order_source === 'shopee'){
+
+  }else if(orderDetails.orders[0].order_source === 'empik'){
+
+    if(orderDetails.orders[0].delivery_method === 'KURIER'){
+
+    }else if(orderDetails.orders[0].delivery_method === 'Paczkomaty InPost'){
+
+    }else if(orderDetails.orders[0].delivery_method === 'Kurier - płatność za pobraniem'){
+
+    }else{
+      //TODO:
+    }
+
+  }else if(orderDetails.orders[0].order_source === 'morele'){
+
+    if(orderDetails.orders[0].delivery_method === 'Przesyłka kurierska'){
+
+    }else if(orderDetails.orders[0].delivery_method === 'Paczkomaty InPost'){
+
+      
+
+    }else{
+      //TODO:
+    }
+
+  }else if(orderDetails.orders[0].order_source === 'ceneo'){
+
+    if(orderDetails.orders[0].delivery_method === 'Paczkomaty InPost, Płatność z góry,Przesyłka, Paczkomat płatność z góry'){
+
+    }else if(orderDetails.orders[0].delivery_method === 'Kurier InPost, Płatność z góry,Przesyłka kurierska'){
+
+    }else if(orderDetails.orders[0].delivery_method === 'Kurier - płatność za pobraniem'){
+
+    }else{
+      //TODO:
+    }
+
+
+
+  }else{
+    //TOOD:
+  }
+
+  
+
+}
+
+function checkIfCod(fields,orderDetails){
+
   console.log(orderDetails.orders[0])
   if(orderDetails.orders[0].payment_method_cod === '0') /// ????
   {
