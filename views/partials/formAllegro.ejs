@@ -1,0 +1,62 @@
+<div class="form__input row align-items-center">
+    <div class="col-3"><label for="kurier-select">Kurier</label></div>
+    <div class="col-9">
+        <select class="form-select przesylki-input" aria-label="Kurier" id="kurier-select">
+            <option value="1" selected>Allegro DPD</option>
+            <option value="2">Allegro UPS</option>
+            <option value="3">Allegro Poczta</option>
+            <option value="4">Allegro One (UPS)</option>
+            <option value="5">Allegro DPD za granicę</option>
+            <option value="6">Allegro One Kurier</option>
+            <option value="7">Allegro One Box (One Kurier)</option>
+            <option value="8">Allegro One Punkt (One Kurier)</option>
+        </select>
+    </div>
+</div>
+
+<div class="form__input row align-items-center">
+    <div class="col-3"><label for="rodzaj-select">Rodzaj</label></div>
+    <div class="col-9">
+        <select class="form-select przesylki-input" aria-label="Rodzaj" id="rodzaj-select">
+            <option value="1" selected>Paczka</option>
+            <option value="2">Koperta</option>
+            <option value="3">Paleta</option>
+        </select>
+    </div>
+</div>
+
+<div class="form__input row align-items-center">
+    <div class="col-3"><label for="pobranie-input">Pobranie</label></div>
+    <div class="col-9">
+        <div class="input-group">
+            <input type="text" class="form-control przesylki-input" aria-label="Pobranie" aria-describedby="pobranie-label" id="pobranie-input">
+            <span class="input-group-text" id="pobranie-label">PLN</span>
+        </div>
+    </div>
+</div>
+
+<div class="form__input row align-items-center">
+    <div class="col-3"><label for="ubezpieczenie-input">Ubezpieczenie</label></div>
+    <div class="col-9">
+        <div class="input-group">
+            <input type="text" class="form-control przesylki-input" aria-label="Ubezpieczenie" aria-describedby="ubezpieczenie-label" id="ubezpieczenie-input">
+            <span class="input-group-text" id="ubezpieczenie-label">PLN</span>
+        </div>
+    </div>
+</div>
+
+<div class="form__input row align-items-center">
+    <div class="col-3"><label for="contents-input" class="form-label" id="contents-label">Opis zawartości</label></div>
+    <div class="col-9">
+        <input type="text" class="form-control przesylki-input" id="contents-input" aria-describedby="contents-label">
+    </div>
+</div>
+
+<div class="form__input row align-items-center">
+    <div class="col-3"><label for="number-input" class="form-label" id="number-label">Numer referencyjny</label></div>
+    <div class="col-9">
+        <input type="text" class="form-control przesylki-input" id="number-input" aria-describedby="number-label">
+    </div>
+</div>
+
+<button type="button" class="btn btn-primary" id="allegro-btn">Zaznacz</button>

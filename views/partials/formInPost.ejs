@@ -1,0 +1,47 @@
+<p>Formularz nadawania przesyłek 'Kurier InPost'. Aby nadać przesyłkę do paczkomatu, przesyłkę Allegro Kurier InPost lub list polecony InPost, skorzystaj z przycisku 'Paczkomaty'.</p>
+
+<div class="form__input row align-items-center">
+    <div class="col-3"><label for="usluga-select">Usługa</label></div>
+    <div class="col-9">
+        <select class="form-select przesylki-input" aria-label="Usługa" id="usluga-select">
+            <option value="1" selected>Przesyłka kurierska standardowa</option>
+            <option value="2">Przesyłka kurierska z doręczeniem do 10:00</option>
+            <option value="3">Przesyłka kurierska z doręczeniem do 12:00</option>
+            <option value="4">Przesyłka kurierska z doręczeniem do 17:00</option>
+            <option value="5">Przesyłka kurierska Paleta Standard</option>
+            <option value="6">Przesyłka kurierska Lokalna Standardowa</option>
+            <option value="7">Przesyłka kurierska Lokalna Expresowa</option>
+            <option value="8">Przesyłka kurierska Lokalna Super Expresowa</option>
+        </select>
+    </div>
+</div>
+
+
+<div class="form__input row align-items-center">
+    <div class="col-3"><label for="pobranie-input">Pobranie</label></div>
+    <div class="col-9">
+        <div class="input-group">
+            <input type="text" class="form-control przesylki-input" aria-label="Pobranie" aria-describedby="pobranie-label" id="pobranie-input">
+            <span class="input-group-text" id="pobranie-label">PLN</span>
+        </div>
+    </div>
+</div>
+
+<div class="form__input row align-items-center">
+    <div class="col-3"><label for="ubezpieczenie-input">Ubezpieczenie</label></div>
+    <div class="col-9">
+        <div class="input-group">
+            <input type="text" class="form-control przesylki-input" aria-label="Ubezpieczenie" aria-describedby="ubezpieczenie-label" id="ubezpieczenie-input">
+            <span class="input-group-text" id="ubezpieczenie-label">PLN</span>
+        </div>
+    </div>
+</div>
+
+<div class="form__input row align-items-center">
+    <div class="col-3"><label for="contents-input" class="form-label" id="contents-label">Zawartość paczki</label></div>
+    <div class="col-9">
+        <input type="text" class="form-control przesylki-input" id="contents-input" aria-describedby="contents-label">
+    </div>
+</div>
+
+<button type="button" class="btn btn-primary" id="inpost-btn">Zaznacz</button>

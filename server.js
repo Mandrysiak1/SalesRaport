@@ -13,6 +13,9 @@ var bodyParser = require('body-parser')
 
 require('dotenv').config({ path: './crid.env' })
 
+app.set('view engine', 'ejs');
+app.use(express.static(__dirname + '/assets'));
+
 app.get('/',async (  req,res) =>{
     console.log("here")
     console.log(req.query.orderid)
@@ -29,28 +32,28 @@ app.get('/raport', (req, res) => {
 
 
 
-cron.schedule('00 59 * * * *', function() {
-    console.log('running addTASK ');
+// cron.schedule('00 59 * * * *', function() {
+//     console.log('running addTASK ');
   
-    request(app)
-  .get('/orders/add')
-  .expect(200)
-  .end(function(err, res) {
-    if (err) throw err;
-    console.log('call done');
-  });
-  });
+//     request(app)
+//   .get('/orders/add')
+//   .expect(200)
+//   .end(function(err, res) {
+//     if (err) throw err;
+//     console.log('call done');
+//   });
+//   });
 
-  cron.schedule('00 18 * * 0', function() {
-    console.log('Running getTask');
-    request(app)
-  .post('/orders/get')
-  .expect(200)
-  .end(function(err, res) {
-    if (err) throw err;
-    console.log('call done');
-  });
-  });
+//   cron.schedule('00 18 * * 0', function() {
+//     console.log('Running getTask');
+//     request(app)
+//   .post('/orders/get')
+//   .expect(200)
+//   .end(function(err, res) {
+//     if (err) throw err;
+//     console.log('call done');
+//   });
+//   });
 
 const ordersRouter = require("./routes/orders")
 const shimpents = require("./routes/shipments")

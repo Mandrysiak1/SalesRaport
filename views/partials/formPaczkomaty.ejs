@@ -1,0 +1,75 @@
+<div class="form__input row align-items-center">
+    <div class="col-3"><label for="usluga-select">Usługa</label></div>
+    <div class="col-9">
+        <select class="form-select przesylki-input" aria-label="Usługa" id="usluga-select">
+            <option value="1" selected>Paczkomaty 24/7 - Przesyłka standardowa</option>
+            <optgroup label="Przesyłki Allegro InPost">
+                <option value="2">Allegro Paczkomaty 24/7 InPost</option>
+                <option value="3">Allegro miniKurier24 InPost</option>
+                <option value="4">Allegro Kurier24 InPost</option>
+                <option value="5">InPost Kurier Standard (C2C)</option>
+            </optgroup>
+            <option value="6">Przesyłka paczkomatowa 'Podaj Dalej'</option>
+        </select>
+    </div>
+</div>
+
+<div class="form__input form__input--radios row align-items-center">
+    <div class="col-3"><label for="gabaryt">Rozmiar</label></div>
+    <div class="col-9">
+        <div class="form-check">
+            <input class="form-check-input przesylki-radio" type="radio" name="gabaryt" id="gabarytA" value="gabarytA" checked>
+            <label class="form-check-label" for="gabarytA">
+                Gabaryt A (8 x 38 x 64 cm)
+            </label>
+          </div>
+          <div class="form-check">
+            <input class="form-check-input przesylki-radio" type="radio" name="gabaryt" value="gabarytB" id="gabarytB">
+            <label class="form-check-label" for="gabarytB">
+                Gabaryt B (19 x 38 x 64 cm)
+            </label>
+          </div>
+          <div class="form-check">
+            <input class="form-check-input przesylki-radio" type="radio" name="gabaryt" value="gabarytC" id="gabarytC">
+            <label class="form-check-label" for="gabarytC">
+                Gabaryt C (41 x 38 x 64 cm)
+            </label>
+          </div>
+          <div class="form-check">
+            <input class="form-check-input przesylki-radio" type="radio" name="gabaryt" value="gabarytD" id="gabarytD">
+            <label class="form-check-label" for="gabarytD">
+                Gabaryt D (50 x 50 x 80 cm) - tylko InPost Kurier Standard (C2C)
+            </label>
+          </div>
+    </div>
+</div>
+
+
+<div class="form__input row align-items-center">
+    <div class="col-3"><label for="pobranie-input">Pobranie</label></div>
+    <div class="col-9">
+        <div class="input-group">
+            <input type="text" class="form-control przesylki-input" aria-label="Pobranie" aria-describedby="pobranie-label" id="pobranie-input">
+            <span class="input-group-text" id="pobranie-label">PLN</span>
+        </div>
+    </div>
+</div>
+
+<div class="form__input row align-items-center">
+    <div class="col-3"><label for="ubezpieczenie-input">Ubezpieczenie</label></div>
+    <div class="col-9">
+        <div class="input-group">
+            <input type="text" class="form-control przesylki-input" aria-label="Ubezpieczenie" aria-describedby="ubezpieczenie-label" id="ubezpieczenie-input">
+            <span class="input-group-text" id="ubezpieczenie-label">PLN</span>
+        </div>
+    </div>
+</div>
+
+<div class="form__input row align-items-center">
+    <div class="col-3"><label for="contents-input" class="form-label" id="contents-label">Opis zawartości</label></div>
+    <div class="col-9">
+        <input type="text" class="form-control przesylki-input" id="contents-input" aria-describedby="contents-label">
+    </div>
+</div>
+
+<button type="button" class="btn btn-primary" id="paczkomaty-btn">Zaznacz</button>
