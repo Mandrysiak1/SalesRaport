@@ -8,7 +8,7 @@ var state = {
     przesylka: []
 };
 
-function deletePackage(package) {
+async function deletePackage(package) {
 
     let packageData = {
         'package_id': package.package_id,
@@ -16,19 +16,28 @@ function deletePackage(package) {
         'package_number': package.package_number
     };
 
-    let row = document.getElementById(package.package_id);
-    row.parentNode.removeChild(row);
 
 
-    // console.log(packageData);
-    // const response = await fetch('', {
-    //     method: 'POST',
-    //     body: body,
-    //     headers: {
-    //         'Content-Type': 'application/json'
-    //     }
-    // });
-    // const myJson = await response.json();
+
+    console.log(packageData);
+    const response = await fetch('/shipments/remove', {
+        method: 'POST',
+        body: JSON.stringify(packageData),
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    });
+    
+    const myJson = await response.json();
+
+    if(myJson === "success"){
+        let row = document.getElementById(package.package_id);
+        row.parentNode.removeChild(row);
+    }else if(myJson === "fail"){
+
+        console.log("niedziała")
+    }
+    
 }
 
 function addPackageToList(package) {

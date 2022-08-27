@@ -1,133 +1,49 @@
 const express = require('express')
 const router = express.Router()
 const axios = require('axios')
-const e = require('express')
+const { ConsoleMessage } = require('puppeteer')
+router.use(require('body-parser').json());
 
-const trackingStatuses = ["Unknown", "Courier label created", "Shipped", "Not delivered", "Out for delivery", "Delivered", "Return", "Aviso", "Waiting at point", "Lost", "Canceled", "On the way"]
+const {getOrderDetails} = require('./functions'); 
+const { response } = require('express');
+
 
 
 router.get('/add', async (req, res) => {
 
   let orderID = 52505013
 
+
   let order_id = req.body.order_id
 
-  addPackage(orderID)
+  //addPackage(orderID)
 
   res.send("test");
 
 })
 
-router.get('/render', async (req, res) => {
-  // let orderID = 52761486
-  // let orderID = 53295197
-  let orderID = 52505013
-  let orderDetails =  await getOrderDetails(orderID)
-
-  // console.log(orderDetails)
-  // console.log(orderDetails.orders[0].products);
 
 
-  let orderPackages =  await getOrderPackages(orderID)
-
-  var tempadd = []
-
-  for (let index = 0; index < orderPackages.packages.length ; index++) {
-
-    tempadd.push (orderPackages.packages[index].package_id)
-    
-  }
-
-  console.log(orderPackages)
- 
-
-  let orderPackagesDetails = await getOrderPackagesDetails(tempadd)
-  
-  for (let index = 0; index < Object.keys(orderPackagesDetails.packages_history).length ; index++) {
-    let objindex = Object.keys(orderPackagesDetails.packages_history)[index]
-    for (let inner_index = 0; inner_index < orderPackagesDetails.packages_history[objindex].length; inner_index++) {
-      const element = orderPackagesDetails.packages_history[objindex][inner_index];
-      console.log(element);
-    } 
-  }
-
-  console.log(orderPackagesDetails);
-
-
-  for(let i = 0 ; i < orderPackages.packages.length; i++) {
-    let obj = orderPackagesDetails.packages_history;
-    if(obj && obj.length === 0) {
-      orderPackages.packages[i].data_nadania = new Date(orderPackages.packages[i].tracking_status_date * 1000);
-    } else {
-      orderPackages.packages[i].data_nadania = new Date(orderPackagesDetails.packages_history[Object.keys(orderPackagesDetails.packages_history)[i]][0].tracking_status_date * 1000);
-    }
-    orderPackages.packages[i].status = trackingStatuses[orderPackages.packages[i].tracking_status];
-    orderPackages.packages[i].package_number = orderPackages.packages[i].courier_package_nr;
-  }
-
-  console.log("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
-  console.log(orderPackages);
-  
-  // if()
-
-  res.render('shipments', {
-    orderDetails: orderDetails.orders[0], 
-    orderPackages: orderPackages,
-    deletePackage: "deletePackage"
-  });
-});
-
-router.get('/remove', async (req, res) => {
+router.post('/remove', async (req, res) => {
 
   let package_id = req.body.package_id
   let package_number = req.body.package_number
   let courier_code = req.body.courier_code
 
-  let response = removePackage(package_id, package_number, courier_code)
+  let response = await removePackage(courier_code,package_id, package_number )
 
-  res.json(response.data.status);
+  console.log(courier_code,package_number,package_id)
 
-})
+  console.log("res: ", response)
 
-router.get('/getPackages', async (req, res) => {
-
-  let orderID = 52175215
-
-  let orderPackages = await getOrderPackages(orderID)
-
-  var tempadd = []
-
-  for (let index = 0; index < orderPackages.packages.length; index++) {
-
-    tempadd.push(orderPackages.packages[index].package_id)
-
-  }
-
-  console.log(orderPackages)
-
-
-  let orderPackagesDetails = await getOrderPackagesDetails(tempadd)
-
-  for (let index = 0; index < Object.keys(orderPackagesDetails.packages_history).length; index++) {
-
-    let objindex = Object.keys(orderPackagesDetails.packages_history)[index]
-
-    for (let inner_index = 0; inner_index < orderPackagesDetails.packages_history[objindex].length; inner_index++) {
-
-      const element = orderPackagesDetails.packages_history[objindex][inner_index];
-
-      console.log(element)
-    }
-
-  }
-
-  res.send("ok")
+  res.json(response);
 
 })
 
 router.get('/execute', async (req, res) => {
 
-  let orderID = 52505013
+  let orderID = 54239464
+
 
   //mark package with "api" in extrafield1
   //create all nessesery packages
@@ -135,17 +51,17 @@ router.get('/execute', async (req, res) => {
   //move order to proper category
   //send emails
 
+  let PaczkomatSize = "B"
+ 
   let orderDetails = await getOrderDetails(orderID)
-
-
-
-
   console.log(orderDetails)
+  await markOrderWithStar(orderID)
+  await createPackages(orderID,orderDetails,PaczkomatSize)
+  await unmarkOrderWithStar(orderID)
+  await moveOrderToProperCategory(orderID,orderDetails.orders[0].order_source)
 
 
-
-
-  //await markOrderWithStar(orderID)
+  //
   // await createPackages(orderID,orderDetails)
   //await unmarkOrderWithStar(orderID)
   //await moveOrderToProperCategory(orderID,orderDetails.order_source)
@@ -167,6 +83,9 @@ async function addPackage(order_id) {
 
 async function removePackage(courier_code, package_id, package_number) {
 
+  console.log(courier_code,package_number,package_id)
+
+
   let params = {
     "courier_code": courier_code,
     "package_id": package_id,
@@ -183,135 +102,86 @@ async function removePackage(courier_code, package_id, package_number) {
       headers: { "X-BLToken": process.env.BASELINKER_API_KEY, 'Content-Type': 'multipart/form-data' }
     })
 
-  return res
+    console.log(res)
+    console.log("rs",res.data.status)
+  return res.data.status === 'SUCCESS' ? "success" : "fail"
 }
 
-async function getOrderPackages(orderID) {
-  let params = {
-    "order_id": orderID,
-  };
 
-  let data = {
-    'method': 'getOrderPackages',
-    'parameters': JSON.stringify(params)
-  };
-  resp = await axios
-    .post('https://api.baselinker.com/connector.php', data, {
-      headers: { "X-BLToken": process.env.BASELINKER_API_KEY, 'Content-Type': 'multipart/form-data' }
-    })
 
-  return resp.data
-}
 
-async function getOrderPackagesDetails(orderIDs) {
 
-  let params = {
-    "package_ids": orderIDs,
-  };
-
-  let data = {
-    'method': 'getCourierPackagesStatusHistory',
-    'parameters': JSON.stringify(params)
-  };
-  resp = await axios
-    .post('https://api.baselinker.com/connector.php', data, {
-      headers: { "X-BLToken": process.env.BASELINKER_API_KEY, 'Content-Type': 'multipart/form-data' }
-    })
-
-  return resp.data
-
-}
-
-async function createPackages(orderID, orderDetails) {
-
-  //check what type of courier
-  //if allegro check "courier" -create array
-  //if paczkomaty get size from Form
-  //if kurier inpost check
-  //if dhl check
-  //check if cod, add to "fields", calculate cod value
-  //calculate insurance
-  //if not paczkomaty prepare "package_fields"
-
-  // checkCourier(fields,orderDetails)
+async function createPackages(orderID, orderDetails,PaczkomatSize) {
 
   let fields = []
-  let package_fields = []
 
-  checkCourier(fields, orderDetails)
-  checkIfCod(fields, orderDetails)
-  getInsuranceValue(fields, orderDetails)
+  await checkIfCod(fields, orderDetails)
+  await getInsuranceValue(fields, orderDetails)
+  await checkCourier(orderID,fields,orderDetails,PaczkomatSize)
 
   console.log(fields)
 
-  // fields.push(
-  //   { id: "courier", value: "9685250" },
-  //   { id: "package_type", value: "PACKAGE" },
-  //   { id: "insurance", type: 42.85 },
-  //   { id: "package_description", value: orderID },
-  //   { id: "reference_number", value: orderID },
-  //   //{ id: "cod",value:"tbd"}
-  // )
-  // package_fields.push(
-  //   { weight: 2 },
-  //   { size_length: 30 },
-  //   { size_width: 40 },
-  //   { size_height: 50 }
-  // )
-
-  // let params = {
-  //   "order_id": orderID,
-  //   "courier_code": "allegrokurier",
-  //   "fields": fields,
-  //   "packages": package_fields
-  // };
-
-  // let data = {
-  //   'method': 'createPackage',
-  //   'parameters': JSON.stringify(params)
-  // };
-  // var initdata = await axios
-  //   .post('https://api.baselinker.com/connector.php', data, { headers: { "X-BLToken": process.env.BASELINKER_API_KEY, 'Content-Type': 'multipart/form-data' } })
-
-  // console.log(initdata)
-
-
-
-  // // KONFIG INPOST paczkomaty
-  //  fields.push(
-  //   {id:"service",value:"detect_new"},
-  //   {id: "size_type",value:"B", }, 
-  //   {id:"insurance",type: 40 },
-  //   //{ id: "cod",value:"tbd"}
-  //   )
-
-  // let params = {
-  //   "order_id":orderID ,
-  //   "courier_code":"paczkomaty",
-  //   "fields" : fields,
-  //   "packages": packages
-  // };
-
-  // let data = {
-  //   'method': 'createPackage',
-  //   'parameters': JSON.stringify(params)
-  // };
-  // var initdata = await axios
-  //   .post('https://api.baselinker.com/connector.php', data, { headers: { "X-BLToken": process.env.BASELINKER_API_KEY, 'Content-Type': 'multipart/form-data' } })
-
-  //   console.log(initdata)
-
-
 }
 
-function checkCourier(fields, orderDetails) {
+async function checkCourier(orderID, fields, orderDetails, packageSize) {
 
+  let package_fields = []
 
   if (orderDetails.orders[0].order_source === 'allegro') {
+
     if (orderDetails.orders[0].delivery_method === 'Allegro Paczkomaty InPost') {
-      //ok
-    } else if (orderDetails.orders[0].delivery_method === 'Allegro miniKurier24 InPost') {
-      //ok
+        
+      // // KONFIG INPOST paczkomaty
+        fields.push(
+          {id:"service",value:"detect_new"},
+          {id:"size_type",value:packageSize }
+          )
+
+        let params = {
+          "order_id":orderID ,
+          "courier_code":"paczkomaty",
+          "fields" : fields,
+        };
+
+        let data = {
+          'method': 'createPackage',
+          'parameters': JSON.stringify(params)
+        };
+        var initdata = await axios
+          .post('https://api.baselinker.com/connector.php', data, { headers: { "X-BLToken": process.env.BASELINKER_API_KEY, 'Content-Type': 'multipart/form-data' } })
+
+          console.log(initdata.data)
+
+
+    } else if (orderDetails.orders[0].delivery_method === 'Allegro miniKurier24 InPost' || orderDetails.orders[0].delivery_method === 'Allegro miniKurier24 InPost pobranie' ) {
+        fields.push(
+          {id:"service",value:"detect_new"},
+          {id: "size_type",value:packageSize }
+          )
+
+          package_fields.push(
+            { weight: 2 },
+            { size_length: 30 },
+            { size_width: 40 },
+            { size_height: 50 }
+          )
+
+        let params = {
+          "order_id":orderID ,
+          "courier_code":"paczkomaty",
+          "fields" : fields,
+          "packages": package_fields
+        };
+
+        let data = {
+          'method': 'createPackage',
+          'parameters': JSON.stringify(params)
+        };
+        var initdata = await axios
+          .post('https://api.baselinker.com/connector.php', data, { headers: { "X-BLToken": process.env.BASELINKER_API_KEY, 'Content-Type': 'multipart/form-data' } })
+
+          console.log(initdata.data)
+
     } else if (orderDetails.orders[0].delivery_method === 'Allegro Kurier DPD'
       || orderDetails.orders[0].delivery_method === 'Allegro Kurier DPD pobranie'
       || orderDetails.orders[0].delivery_method === 'Allegro Odbiór w Punkcie DPD Pickup'
@@ -320,68 +190,365 @@ function checkCourier(fields, orderDetails) {
 
       if (orderDetails.orders[0].delivery_country_code === 'PL') {
         //ID = 9685250
+         fields.push(
+            { id: "courier", value: "9685250" },
+            { id: "package_type", value: "PACKAGE" },
+            { id: "package_description", value: orderID },
+            { id: "reference_number", value: orderID },
+          )
+          package_fields.push(
+            { weight: 2 },
+            { size_length: 30 },
+            { size_width: 40 },
+            { size_height: 50 }
+          )
+
+          let params = {
+            "order_id": orderID,
+            "courier_code": "allegrokurier",
+            "fields": fields,
+            "packages": package_fields
+          };
+
+          let data = {
+            'method': 'createPackage',
+            'parameters': JSON.stringify(params)
+          };
+          var initdata = await axios
+            .post('https://api.baselinker.com/connector.php', data, { headers: { "X-BLToken": process.env.BASELINKER_API_KEY, 'Content-Type': 'multipart/form-data' } })
+
+          console.log(initdata.data)
+          console.log("dpd: " + "PL")
+
 
       } else if (orderDetails.orders[0].delivery_country_code !== 'PL') {
-        //ID = 11436059
-      } else {
+          //ID = 11436059
+          fields.push(
+            { id: "courier", value: "11436059" },
+            { id: "package_type", value: "PACKAGE" },
+            { id: "package_description", value: orderID },
+            { id: "reference_number", value: orderID },
+          )
+          package_fields.push(
+            { weight: 2 },
+            { size_length: 30 },
+            { size_width: 40 },
+            { size_height: 50 }
+          )
 
+          let params = {
+            "order_id": orderID,
+            "courier_code": "allegrokurier",
+            "fields": fields,
+            "packages": package_fields
+          };
+
+          let data = {
+            'method': 'createPackage',
+            'parameters': JSON.stringify(params)
+          };
+          var initdata = await axios
+            .post('https://api.baselinker.com/connector.php', data, { headers: { "X-BLToken": process.env.BASELINKER_API_KEY, 'Content-Type': 'multipart/form-data' } })
+
+          console.log(initdata.data)
+      } else {
+        console.log("else from allegro DPD")
       }
 
 
     } else if (orderDetails.orders[0].delivery_method === 'Allegro One Box') {
+      //ID 17630958
+      fields.push(
+        { id: "courier", value: "17630958" },
+        { id: "package_type", value: "PACKAGE" },
+        { id: "package_description", value: orderID },
+        { id: "reference_number", value: orderID },
+      )
+      package_fields.push(
+        { weight: 2 },
+        { size_length: 30 },
+        { size_width: 40 },
+        { size_height: 50 }
+      )
 
-    } else if (orderDetails.orders[0].delivery_method === 'Allegro Kurier UPS') {
+      let params = {
+        "order_id": orderID,
+        "courier_code": "allegrokurier",
+        "fields": fields,
+        "packages": package_fields
+      };
+
+      let data = {
+        'method': 'createPackage',
+        'parameters': JSON.stringify(params)
+      };
+      var initdata = await axios
+        .post('https://api.baselinker.com/connector.php', data, { headers: { "X-BLToken": process.env.BASELINKER_API_KEY, 'Content-Type': 'multipart/form-data' } })
+
+      console.log(initdata.data)
+
+    } else if (orderDetails.orders[0].delivery_method === 'Allegro Kurier UPS' || orderDetails.orders[0].delivery_method === 'Allegro Odbiór w Punkcie UPS') {
       //ID = 9685251
 
+      fields.push(
+        { id: "courier", value: "9685251" },
+        { id: "package_type", value: "PACKAGE" },
+        { id: "package_description", value: orderID },
+        { id: "reference_number", value: orderID },
+      )
+      package_fields.push(
+        { weight: 2 },
+        { size_length: 30 },
+        { size_width: 40 },
+        { size_height: 50 }
+      )
 
-    } else if (orderDetails.orders[0].delivery_method === 'Allegro Odbiór w Punkcie UPS') {
+      let params = {
+        "order_id": orderID,
+        "courier_code": "allegrokurier",
+        "fields": fields,
+        "packages": package_fields
+      };
+
+      let data = {
+        'method': 'createPackage',
+        'parameters': JSON.stringify(params)
+      };
+      var initdata = await axios
+        .post('https://api.baselinker.com/connector.php', data, { headers: { "X-BLToken": process.env.BASELINKER_API_KEY, 'Content-Type': 'multipart/form-data' } })
+
+      console.log(initdata.data)
+
 
     } else {
-      //TODO:
+      console.log("ELSE FROM ALLEGRO")
     }
 
   } else if (orderDetails.orders[0].order_source === 'shopee') {
+    let params = {
+      "order_id": orderID,
+      "courier_code": "shopeelogistic",
+    };
+
+    let data = {
+      'method': 'createPackage',
+      'parameters': JSON.stringify(params)
+    };
+    var initdata = await axios
+      .post('https://api.baselinker.com/connector.php', data, { headers: { "X-BLToken": process.env.BASELINKER_API_KEY, 'Content-Type': 'multipart/form-data' } })
+
+    console.log(initdata.data)
 
   } else if (orderDetails.orders[0].order_source === 'empik') {
 
-    if (orderDetails.orders[0].delivery_method === 'KURIER') {
+
+    if (orderDetails.orders[0].delivery_method === 'KURIER' || orderDetails.orders[0].delivery_method === 'Kurier - płatność za pobraniem' ) {
+
+
+      fields.push(
+        {id:"service",value:"inpost_courier_standard"},
+        {id: "package_description", value: orderID },
+        {id:"services_additional", value: "email"}
+        )
+
+        package_fields = [
+          { "weight": Number.parseFloat(3.0),
+           "size_length": 30 ,
+           "size_width": 40 ,
+           "size_height": 50 ,
+           "size_custom": 0}]
+
+      let params = {
+        "order_id":orderID ,
+        "courier_code":"inpostkurier",
+        "fields" : fields,
+        "packages": package_fields
+      };
+
+      let data = {
+        'method': 'createPackage',
+        'parameters': JSON.stringify(params)
+      };
+      var initdata = await axios
+        .post('https://api.baselinker.com/connector.php', data, { headers: { "X-BLToken": process.env.BASELINKER_API_KEY, 'Content-Type': 'multipart/form-data' } })
+
+        console.log(initdata.data)
+
+
 
     } else if (orderDetails.orders[0].delivery_method === 'Paczkomaty InPost') {
 
-    } else if (orderDetails.orders[0].delivery_method === 'Kurier - płatność za pobraniem') {
+          // // KONFIG INPOST paczkomaty
+          fields.push(
+            {id:"service",value:"inpost_locker_standard"},
+            {id:"size_type",value:packageSize }
+            )
+  
+            package_fields = [
+              { "weight": Number.parseFloat(3.0),
+              "size_length": 30 ,
+              "size_width": 40 ,
+              "size_height": 50 ,
+              "size_custom": 0}]
+
+          let params = {
+            "order_id":orderID ,
+            "courier_code":"paczkomaty",
+            "fields" : fields,
+            "packages": package_fields
+          };
+  
+          let data = {
+            'method': 'createPackage',
+            'parameters': JSON.stringify(params)
+          };
+          var initdata = await axios
+            .post('https://api.baselinker.com/connector.php', data, { headers: { "X-BLToken": process.env.BASELINKER_API_KEY, 'Content-Type': 'multipart/form-data' } })
+  
+            console.log(initdata.data)
 
     } else {
-      //TODO:
+        console.log("ELSE FROM EMPIK")
     }
 
   } else if (orderDetails.orders[0].order_source === 'morele') {
 
     if (orderDetails.orders[0].delivery_method === 'Przesyłka kurierska') {
 
+      fields.push(
+        {id:"service",value:"inpost_courier_standard"},
+        {id: "package_description", value: orderID },
+        {id:"services_additional", value: "email"}
+        )
+
+        package_fields = [
+          { "weight": Number.parseFloat(3.0),
+           "size_length": 30 ,
+           "size_width": 40 ,
+           "size_height": 50 ,
+           "size_custom": 0}]
+
+      let params = {
+        "order_id":orderID ,
+        "courier_code":"inpostkurier",
+        "fields" : fields,
+        "packages": package_fields
+      };
+
+      let data = {
+        'method': 'createPackage',
+        'parameters': JSON.stringify(params)
+      };
+      var initdata = await axios
+        .post('https://api.baselinker.com/connector.php', data, { headers: { "X-BLToken": process.env.BASELINKER_API_KEY, 'Content-Type': 'multipart/form-data' } })
+
+        console.log(initdata.data)
+
+
     } else if (orderDetails.orders[0].delivery_method === 'Paczkomaty InPost') {
 
+    // // KONFIG INPOST paczkomaty
+    fields.push(
+      {id:"service",value:"inpost_locker_standard"},
+      {id:"size_type",value:packageSize }
+      )
 
+    let params = {
+      "order_id":orderID ,
+      "courier_code":"paczkomaty",
+      "fields" : fields,
+      "packages": package_fields
+    };
+
+    let data = {
+      'method': 'createPackage',
+      'parameters': JSON.stringify(params)
+    };
+    var initdata = await axios
+      .post('https://api.baselinker.com/connector.php', data, { headers: { "X-BLToken": process.env.BASELINKER_API_KEY, 'Content-Type': 'multipart/form-data' } })
+
+      console.log(initdata.data)
 
     } else {
-      //TODO:
+      console.log("ELSE FROM MORELE")
     }
 
   } else if (orderDetails.orders[0].order_source === 'ceneo') {
 
     if (orderDetails.orders[0].delivery_method === 'Paczkomaty InPost, Płatność z góry,Przesyłka, Paczkomat płatność z góry') {
 
-    } else if (orderDetails.orders[0].delivery_method === 'Kurier InPost, Płatność z góry,Przesyłka kurierska') {
+    } else if (orderDetails.orders[0].delivery_method === 'Kurier InPost, Płatność z góry,Przesyłka kurierska' || orderDetails.orders[0].delivery_method === "Kurier InPost, Płatność przy odbiorze,Przesyłka kurierska pobraniowa") {
+
+      fields.push(
+        {id:"service",value:"inpost_courier_standard"},
+        {id: "package_description", value: orderID },
+        {id:"services_additional", value: "email"}
+        )
+
+        package_fields = [
+          { "weight": Number.parseFloat(3.0),
+           "size_length": 30 ,
+           "size_width": 40 ,
+           "size_height": 50 ,
+           "size_custom": 0}]
+
+      let params = {
+        "order_id": orderID ,
+        "courier_code": "inpostkurier",
+        "fields" : fields,
+        "packages": package_fields
+      };
+
+      let data = {
+        'method': 'createPackage',
+        'parameters': JSON.stringify(params)
+      };
+      var initdata = await axios
+        .post('https://api.baselinker.com/connector.php', data, { headers: { "X-BLToken": process.env.BASELINKER_API_KEY, 'Content-Type': 'multipart/form-data' } })
+
+        console.log(initdata.data)
+
 
     } else if (orderDetails.orders[0].delivery_method === 'Kurier - płatność za pobraniem') {
+      fields.push(
+        {id:"service",value:"inpost_courier_standard"},
+        {id: "package_description", value: orderID },
+        {id:"services_additional", value: "email"}
+        )
+
+        package_fields = [
+          { "weight": Number.parseFloat(3.0),
+           "size_length": 30 ,
+           "size_width": 40 ,
+           "size_height": 50 ,
+           "size_custom": 0}]
+
+      let params = {
+        "order_id":orderID ,
+        "courier_code":"inpostkurier",
+        "fields" : fields,
+        "packages": package_fields
+      };
+
+      let data = {
+        'method': 'createPackage',
+        'parameters': JSON.stringify(params)
+      };
+      var initdata = await axios
+        .post('https://api.baselinker.com/connector.php', data, { headers: { "X-BLToken": process.env.BASELINKER_API_KEY, 'Content-Type': 'multipart/form-data' } })
+
+        console.log(initdata.data)
+
 
     } else {
-      //TODO:
+      console.log("ELSE FROM CENEO")
     }
 
 
 
   } else {
-    //TOOD:
+    console.log("ELSE FROM CREATE PACKAGE")
+
   }
 
 
@@ -462,24 +629,7 @@ async function unmarkOrderWithStar(orderID) {
 
 }
 
-async function getOrderDetails(orderID) {
-  let params = {
-    "order_id": orderID,
-  };
 
-  let data = {
-    'method': 'getOrders',
-    'parameters': JSON.stringify(params)
-  };
-  let info = await axios
-    .post('https://api.baselinker.com/connector.php', data, {
-      headers: { "X-BLToken": process.env.BASELINKER_API_KEY, 'Content-Type': 'multipart/form-data' }
-    })
-
-
-  return info.data
-
-}
 
 async function sendEmail() {
 
@@ -489,7 +639,9 @@ async function sendEmail() {
 
 async function moveOrderToProperCategory(orderID, orderSource) {
 
+  console.log("orderSource from moveorder: " + orderSource )
   let statusID = getCategoryStatus(orderSource)
+  console.log("statusID from moveorder: " + statusID )
 
   let params = {
     "order_id": orderID,
@@ -506,14 +658,14 @@ async function moveOrderToProperCategory(orderID, orderSource) {
     })
 
 
-  console.log(info.status)
+  console.log("status changes: " + info.status)
 }
 
-async function getCategoryStatus(orderSource) {
+function getCategoryStatus(orderSource) {
   return sourceToCategoryArray[orderSource];
 }
 
 
-const sourceToCategoryArray = { "allegro": 161878, "shopee": 173349, "empik": 193321, "morele": 194350, "cenoe": 239827 }
+const sourceToCategoryArray = { "allegro": 161878, "shopee": 173349, "empik": 193321, "morele": 194350, "ceneo": 239827 }
 
 module.exports = router

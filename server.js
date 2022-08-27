@@ -57,9 +57,12 @@ app.get('/raport', (req, res) => {
 
 const ordersRouter = require("./routes/orders")
 const shimpents = require("./routes/shipments")
+const shimpentsRender = require("./routes/shipmentsRender")
+
 
 app.use("/orders", ordersRouter)
 app.use("/shipments",shimpents)
+app.use("/render",shimpentsRender)
 const Port = process.env.PORT  || 8080
 
 const server = app.listen(Port,() => console.log(`Server start on port: ${Port}`))
