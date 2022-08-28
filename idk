@@ -1,0 +1,37 @@
+Rodzaj do wywalenia
+pobranie -> cod
+ubezpieczenie -> insurance
+opis zaw -> desc
+numer ref -> ref
+
+
+
+deliveryMethod
+paczkomatSize
+
+
+Przycisk -> usługa
+Allegro
+	Allegro DPD => Allegro Kurier DPD
+	Allegro UPS => Allegro Kurier UPS
+	Allegro Poczta => do wywalenia, nie mamy tego
+	Allegro One (UPS) => do wywalenia, nie mamy tego 
+	Allegro DPD za Granice => Allegro Kurier DPD
+	Allegro One Box (One Kurier) => Allegro One Box
+	Allegro One Punkt (One Kurier) => Allegro One Punkt
+
+Usługa -> przycisk
+
+Empik 
+KURIER => Inpost standardowa przesyłka kurierska
+Kurier - płatność za pobraniem => Inpost standardowa przesyłka kurierska
+Paczkomaty InPost              => Paczkomaty 24/7 - Przesyłka standardowa
+
+Morele
+Przesyłka kurierska            => Inpost standardowa przesyłka kurierska
+Paczkomaty InPost              => Paczkomaty 24/7 - Przesyłka standardowa
+
+CENEO
+Paczkomaty InPost, Płatność z góry,Przesyłka, Paczkomat płatność z góry => Paczkomaty 24/7 - Przesyłka standardowa
+Kurier InPost, Płatność z góry,Przesyłka kurierska                      => Inpost standardowa przesyłka kurierska
+Kurier InPost, Płatność przy odbiorze,Przesyłka kurierska pobraniowa	=> Inpost standardowa przesyłka kurierska

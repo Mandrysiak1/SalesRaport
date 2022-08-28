@@ -16,19 +16,20 @@ async function deletePackage(package) {
         'package_number': package.package_number
     };
 
-
-
-
-    console.log(packageData);
-    const response = await fetch('/shipments/remove', {
-        method: 'POST',
-        body: JSON.stringify(packageData),
-        headers: {
-            'Content-Type': 'application/json'
-        }
-    });
     
-    const myJson = await response.json();
+    console.log(packageData);
+    // const response = await fetch('/shipments/remove', {
+    //     method: 'POST',
+    //     body: JSON.stringify(packageData),
+    //     headers: {
+    //         'Content-Type': 'application/json'
+    //     }
+    // });
+    
+    // const myJson = await response.json();
+
+    //myJson = "success"
+    //myJson = "fail"
 
     if(myJson === "success"){
         let row = document.getElementById(package.package_id);

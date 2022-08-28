@@ -8,12 +8,13 @@ const trackingStatuses = ["Unknown", "Courier label created", "Shipped", "Not de
 
 
 
-router.get('/', async (req, res) => {
+router.get('/:id', async (req, res) => {
     // let orderID = 52761486
     // let orderID = 53295197
-   let orderID = 54117102
+   //let orderID = 54117102
    // let orderID = 54267460
 
+    orderID = id
     let orderDetails =  await getOrderDetails(orderID)
   
     // console.log(orderDetails)
@@ -70,7 +71,10 @@ router.get('/', async (req, res) => {
     // if()
   
     res.render('shipments', {
-      orderDetails: orderDetails.orders[0], 
+      orderDetails: orderDetails.orders[0],
+      defaultShipmentMethod : {}
+      //cod:
+      //insurance:
       orderPackages: orderPackages,
       deletePackage: "deletePackage"
     });
