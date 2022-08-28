@@ -264,8 +264,14 @@ async function createPackage()
 
 window.onload = async function() {
     console.log('Func launched');
-    let deliveryMethod = document.getElementById('delivery-method-span').textContent;
+    // let deliveryMethod = document.getElementById('delivery-method-span').textContent;
+    // state.deliveryMethod = deliveryMethod;
+
+    let deliverySelect = document.getElementById('service-select');
+    let deliveryMethod = deliverySelect.options[deliverySelect.selectedIndex].text;
     state.deliveryMethod = deliveryMethod;
+    // document.getElementById('delivery-method-span').textContent = deliveryMethod;
+
 
     let orderId = document.getElementById('order-id-span').textContent.replace('#', '');
     state.orderId = orderId;
