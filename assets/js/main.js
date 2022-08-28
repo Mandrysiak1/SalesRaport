@@ -5,7 +5,9 @@ var state = {
     },
     // message: "",
     // topic: "",
-    przesylka: []
+    przesylka: {},
+    deliveryMethod : '',
+    orderId: ''
 };
 
 const alertContainer = document.getElementById('alerts')
@@ -208,7 +210,7 @@ function getNewPackageFieldValues(type) {
             }
         }
     }
-    state.przesylka = values;
+    state.przesylka.data = values;
 
     //get package dimensions
     selector = '#dimensions .dimension__input';
@@ -224,28 +226,70 @@ function getNewPackageFieldValues(type) {
 
     state.przesylka.dimensions = dimensions;
     console.log(state)
+
+
 }
 
-window.onload = function() {
+async function createPackage()
+{
+    const response = await fetch('/shipments/create', {
+        method: 'POST',
+        body: JSON.stringify(state),
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    });
+    
+    const myJson = await response.json();
+
+    let data = {}
+    if(myJson === "success"){
+        // let row = document.getElementById(package.package_id);
+        // row.parentNode.removeChild(row);
+        data.type = 'success';
+        data.header = 'Sukces!';
+        //data.message = 'Pomyślnie usunięto przesyłkę o numerze ' + package.package_id + '.';
+        data.icon = 'bi-exclamation-triangle-fill';
+        
+    }else if(myJson === "fail"){
+        data.type = 'danger';
+        data.header = 'Wystąpił błąd.'
+       // data.message = 'Nie udało się usunąć przesyłki o numerze ' + package.package_id + '.';
+        data.icon = 'bi-check-circle-fill';
+        console.log("niedziała")
+    }
+    alert(data);
+
+}
+
+window.onload = async function() {
     console.log('Func launched');
     let deliveryMethod = document.getElementById('delivery-method-span').textContent;
     state.deliveryMethod = deliveryMethod;
 
+    let orderId = document.getElementById('order-id-span').textContent.replace('#', '');
+    state.orderId = orderId;
+
     let allegroTabBtn = document.getElementById('allegro-btn');
-    allegroTabBtn.addEventListener('click', function() {
+    allegroTabBtn.addEventListener('click',async function() {
         getNewPackageFieldValues('allegro');
+        await createPackage()
     });
 
-    document.getElementById('dhl-btn').addEventListener('click', function() {
+    document.getElementById('dhl-btn').addEventListener('click',async function() {
         getNewPackageFieldValues('dhl');
+        await createPackage()
+        
     });
 
-    document.getElementById('inpost-btn').addEventListener('click', function() {
+    document.getElementById('inpost-btn').addEventListener('click',async function() {
         getNewPackageFieldValues('inpost');
+        await createPackage()
     });
 
-    document.getElementById('paczkomaty-btn').addEventListener('click', function() {
+    document.getElementById('paczkomaty-btn').addEventListener('click', async function() {
         getNewPackageFieldValues('paczkomaty');
+        await createPackage()
     });
 //     document.getElementById('shopee-btn').addEventListener('click', function() {
 //         getShopeeFieldValues();

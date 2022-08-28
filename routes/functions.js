@@ -112,7 +112,7 @@ async function getOrderDetails(orderID) {
     if (orderDetails.orders[0].order_source === 'empik') {
 
       if (orderDetails.orders[0].delivery_method === 'KURIER' || orderDetails.orders[0].delivery_method === 'Kurier - płatność za pobraniem' ) {
-        return {tab:'inpost',value:'Inpost standardowa przesyłka kurierska'}
+        return {tab:'inpost',value:'Przesyłka kurierska standardowa'}
       }else if(orderDetails.orders[0].delivery_method === 'Paczkomaty InPost')
       {
         return {tab:'Paczkomaty',value:'Paczkomaty 24/7 - Przesyłka standardowa'}
@@ -123,7 +123,7 @@ async function getOrderDetails(orderID) {
     }else if(orderDetails.orders[0].order_source === 'morele'){
 
       if (orderDetails.orders[0].delivery_method === 'Przesyłka kurierska') {
-        return {tab:'inpost',value:'Inpost standardowa przesyłka kurierska'}
+        return {tab:'inpost',value:'Przesyłka kurierska standardowa'}
       }else if(orderDetails.orders[0].delivery_method === 'Paczkomaty InPost'){
         return {tab:'Paczkomaty',value:'Paczkomaty 24/7 - Przesyłka standardowa'}
       }else{
@@ -132,7 +132,7 @@ async function getOrderDetails(orderID) {
 
     }else if(orderDetails.orders[0].order_source === 'ceneo'){
       if (orderDetails.orders[0].delivery_method === 'Kurier InPost, Płatność z góry,Przesyłka kurierska' || orderDetails.orders[0].delivery_method === 'Kurier InPost, Płatność przy odbiorze,Przesyłka kurierska pobraniowa' ) {
-        return {tab:'inpost',value:'Inpost standardowa przesyłka kurierska'}
+        return {tab:'inpost',value:'Przesyłka kurierska standardowa'}
       }else if(orderDetails.orders[0].delivery_method === 'Paczkomaty InPost, Płatność z góry,Przesyłka, Paczkomat płatność z góry'){
         return {tab:'Paczkomaty',value:'Paczkomaty 24/7 - Przesyłka standardowa'}
       }else{
@@ -159,9 +159,9 @@ async function getOrderDetails(orderID) {
       || orderDetails.orders[0].delivery_method === 'Allegro Odbiór w Punkcie UPS'){
         return {tab:'allegro',value:'Allegro UPS'}
       }else if(orderDetails.orders[0].delivery_method === 'Allegro One Box'){
-        return {tab:'allegro',value:'Allegro One Box'}
+        return {tab:'allegro',value:'Allegro One Box (One Kurier)'}
       }else if(orderDetails.orders[0].delivery_method === 'Allegro One Punkt'){
-        return {tab:'allegro',value:'Allegro One Punkt'}
+        return {tab:'allegro',value:'Allegro One Punkt (One Kurier)'}
       }else if (orderDetails.orders[0].delivery_method === 'Allegro Paczkomaty InPost'){
         return {tab:'paczkomaty',value:'Allegro Paczkomaty 24/7 InPost'}
       }else if (orderDetails.orders[0].delivery_method === 'Allegro miniKurier24 InPost' || orderDetails.orders[0].delivery_method === 'Allegro miniKurier24 InPost pobranie'){
