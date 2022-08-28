@@ -115,7 +115,7 @@ async function getOrderDetails(orderID) {
         return {tab:'inpost',value:'Przesyłka kurierska standardowa'}
       }else if(orderDetails.orders[0].delivery_method === 'Paczkomaty InPost')
       {
-        return {tab:'Paczkomaty',value:'Paczkomaty 24/7 - Przesyłka standardowa'}
+        return {tab:'paczkomaty',value:'Paczkomaty 24/7 - Przesyłka standardowa'}
       }else{
         return {tab:'idk',value: 'idk_from_empik'}
       }
@@ -125,7 +125,7 @@ async function getOrderDetails(orderID) {
       if (orderDetails.orders[0].delivery_method === 'Przesyłka kurierska') {
         return {tab:'inpost',value:'Przesyłka kurierska standardowa'}
       }else if(orderDetails.orders[0].delivery_method === 'Paczkomaty InPost'){
-        return {tab:'Paczkomaty',value:'Paczkomaty 24/7 - Przesyłka standardowa'}
+        return {tab:'paczkomaty',value:'Paczkomaty 24/7 - Przesyłka standardowa'}
       }else{
         return {tab:'idk',value: 'idk_from_morele'}
       }
@@ -134,7 +134,7 @@ async function getOrderDetails(orderID) {
       if (orderDetails.orders[0].delivery_method === 'Kurier InPost, Płatność z góry,Przesyłka kurierska' || orderDetails.orders[0].delivery_method === 'Kurier InPost, Płatność przy odbiorze,Przesyłka kurierska pobraniowa' ) {
         return {tab:'inpost',value:'Przesyłka kurierska standardowa'}
       }else if(orderDetails.orders[0].delivery_method === 'Paczkomaty InPost, Płatność z góry,Przesyłka, Paczkomat płatność z góry'){
-        return {tab:'Paczkomaty',value:'Paczkomaty 24/7 - Przesyłka standardowa'}
+        return {tab:'paczkomaty',value:'Paczkomaty 24/7 - Przesyłka standardowa'}
       }else{
         return {tab:'idk',value: 'idk_from_ceneo'}
       }

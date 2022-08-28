@@ -278,23 +278,23 @@ window.onload = async function() {
     let allegroTabBtn = document.getElementById('allegro-btn');
     allegroTabBtn.addEventListener('click',async function() {
         getNewPackageFieldValues('allegro');
-        // await createPackage()
+         await createPackage()
     });
 
     document.getElementById('dhl-btn').addEventListener('click',async function() {
         getNewPackageFieldValues('dhl');
-        // await createPackage()
+         await createPackage()
         
     });
 
     document.getElementById('inpost-btn').addEventListener('click',async function() {
         getNewPackageFieldValues('inpost');
-        // await createPackage()
+         await createPackage()
     });
 
     document.getElementById('paczkomaty-btn').addEventListener('click', async function() {
         getNewPackageFieldValues('paczkomaty');
-        // await createPackage()
+         await createPackage()
     });
 //     document.getElementById('shopee-btn').addEventListener('click', function() {
 //         getShopeeFieldValues();

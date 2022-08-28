@@ -9,11 +9,12 @@ const { getOrderDetails, checkIfCod, getInsuranceValue } = require('./functions'
 
 
 router.post('/create', async (req, res) => {
+ 
   console.log("req",req.body.przesylka )
 
   let orderID = req.body.orderId
-  //let deliveryMethod = req.body.deliveryMethod
-  let deliveryMethod = 'Allegro DPD'
+  let deliveryMethod = req.body.deliveryMethod
+  //let deliveryMethod = 'Allegro DPD'
   let cod = req.body.przesylka.data.find(el => el.name === 'cod').value
   let insurance = req.body.przesylka.data.find(el => el.name === 'insurance').value
   // let contents = req.body.przesylka.find(el => el.name === 'contents').value
@@ -173,7 +174,7 @@ async function sendInpostPaczkomat(orderID, packageSize, cod, insurance) {
 async function sendInpostCourier(orderID, dimensions, cod, insurance) {
 
   let weight = dimensions.find(el => el.dimension === 'weight').value
-  let length = dimensions.find(el => el.dimension === 'weight').lengh
+  let length = dimensions.find(el => el.dimension === 'weight').value
   let width = dimensions.find(el => el.dimension === 'width').value
   let height = dimensions.find(el => el.dimension === 'height').value
   let fields = []
@@ -219,11 +220,12 @@ async function sendInpostCourier(orderID, dimensions, cod, insurance) {
 async function sendAllegroCourier(orderID, deliveryMethod, dimensions, cod, insurance) {
 
   let weight = dimensions.find(el => el.dimension === 'weight').value
-  let length = dimensions.find(el => el.dimension === 'weight').lengh
+  let length = dimensions.find(el => el.dimension === 'weight').value
   let width = dimensions.find(el => el.dimension === 'width').value
   let height = dimensions.find(el => el.dimension === 'height').value
 
-  let id = getAllegroID(deliveryMethod)
+
+  let id = await getAllegroID(deliveryMethod)
 
   let fields = []
   let package_fields = []
@@ -259,7 +261,7 @@ async function sendAllegroCourier(orderID, deliveryMethod, dimensions, cod, insu
   var res = await axios
     .post('https://api.baselinker.com/connector.php', data, { headers: { "X-BLToken": process.env.BASELINKER_API_KEY, 'Content-Type': 'multipart/form-data' } })
 
-  console.log(res.data)
+  console.log("allegro dpd: ",res.data)
 
   return res.data.status === 'SUCCESS' ? "success" : "fail"
 }
@@ -284,7 +286,7 @@ async function getAllegroID(deliveryMethod) {
 
   } else if (deliveryMethod === 'Allegro One Box (One Kurier)') {
 
-    return 17630958
+    return 11270948
   } else return -1
 
 
