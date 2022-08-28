@@ -1,14 +1,14 @@
 <div class="form__input row align-items-center">
-    <div class="col-3"><label for="usluga-select">Usługa</label></div>
+    <div class="col-3"><label for="service-select">Usługa</label></div>
     <div class="col-9">
-        <select class="form-select przesylki-input" aria-label="Usługa" id="usluga-select">
-            <option value="1" selected>Standard</option>
-            <option value="2">Connect Plus (tylko do przesyłek zagranicznych)</option>
+        <select class="form-select przesylki-input" aria-label="Usługa" id="service-select">
+            <option value="1" <%= value === 'Standard' ? 'selected' : '' %>>Standard</option>
+            <option value="2" <%= value === 'Connect Plus (tylko do przesyłek zagranicznych)' ? 'selected' : '' %>>Connect Plus (tylko do przesyłek zagranicznych)</option>
         </select>
     </div>
 </div>
 
-<div class="form__input row align-items-center">
+<!-- <div class="form__input row align-items-center">
     <div class="col-3"><label for="rodzaj-select">Rodzaj</label></div>
     <div class="col-9">
         <select class="form-select przesylki-input" aria-label="Rodzaj" id="rodzaj-select">
@@ -17,24 +17,24 @@
             <option value="3">Paleta</option>
         </select>
     </div>
-</div>
+</div> -->
 
 <div class="form__input row align-items-center">
-    <div class="col-3"><label for="pobranie-input">Pobranie</label></div>
+    <div class="col-3"><label for="cod-input">Pobranie</label></div>
     <div class="col-9">
         <div class="input-group">
-            <input type="text" class="form-control przesylki-input" aria-label="Pobranie" aria-describedby="pobranie-label" id="pobranie-input">
-            <span class="input-group-text" id="pobranie-label">PLN</span>
+            <input type="text" class="form-control przesylki-input" aria-label="Pobranie" aria-describedby="cod-label" id="cod-input">
+            <span class="input-group-text" id="cod-label">PLN</span>
         </div>
     </div>
 </div>
 
 <div class="form__input row align-items-center">
-    <div class="col-3"><label for="ubezpieczenie-input">Ubezpieczenie</label></div>
+    <div class="col-3"><label for="insurance-input">Ubezpieczenie</label></div>
     <div class="col-9">
         <div class="input-group">
-            <input type="text" class="form-control przesylki-input" aria-label="Ubezpieczenie" aria-describedby="ubezpieczenie-label" id="ubezpieczenie-input">
-            <span class="input-group-text" id="ubezpieczenie-label">PLN</span>
+            <input type="text" class="form-control przesylki-input" aria-label="Ubezpieczenie" aria-describedby="insurance-label" id="insurance-input" value="<%= insurance %>">
+            <span class="input-group-text" id="insurance-label">PLN</span>
         </div>
     </div>
 </div>
@@ -42,14 +42,14 @@
 <div class="form__input row align-items-center">
     <div class="col-3"><label for="contents-input" class="form-label" id="contents-label">Zawartość paczki</label></div>
     <div class="col-9">
-        <input type="text" class="form-control przesylki-input" id="contents-input" aria-describedby="contents-label">
+        <input type="text" class="form-control przesylki-input" id="contents-input" aria-describedby="contents-label"  value="Nie rzucać">
     </div>
 </div>
 
 <div class="form__input row align-items-center">
-    <div class="col-3"><label for="remarks-input" class="form-label" id="remarks-label">Uwagi</label></div>
+    <div class="col-3"><label for="refnumber-input" class="form-label" id="refnumber-label">Uwagi</label></div>
     <div class="col-9">
-        <input type="text" class="form-control przesylki-input" id="remarks-input" aria-describedby="remarks-label">
+        <input type="text" class="form-control przesylki-input" id="refnumber-input" aria-describedby="refnumber-label" value="<%= refVal %>">
     </div>
 </div>
 

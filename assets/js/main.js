@@ -191,9 +191,9 @@ function getNewPackageFieldValues(type) {
     for (let inputField of inputFields) {
         let input = inputField.getElementsByClassName('przesylki-input')[0];
         if(input && input.classList.contains('form-select')) {
-            values.push(input.options[input.selectedIndex].text);
+            values.push({name: input.id.split('-')[0], value: input.options[input.selectedIndex].text});
         } else if (input && input.classList.contains('form-control')) {
-            values.push(input.value);
+            values.push({name: input.id.split('-')[0], value: input.value});
         }
     }
 
@@ -203,9 +203,8 @@ function getNewPackageFieldValues(type) {
     for (let radioGroup of radioGroups) {
         let radios = radioGroup.getElementsByClassName('przesylki-radio');
         for (let radio of radios) {
-            console.log(radio);
             if(radio.checked) {
-                values.push(radio.value);
+                values.push({name: 'size', value: radio.value});
             }
         }
     }
@@ -229,6 +228,9 @@ function getNewPackageFieldValues(type) {
 
 window.onload = function() {
     console.log('Func launched');
+    let deliveryMethod = document.getElementById('delivery-method-span').textContent;
+    state.deliveryMethod = deliveryMethod;
+
     let allegroTabBtn = document.getElementById('allegro-btn');
     allegroTabBtn.addEventListener('click', function() {
         getNewPackageFieldValues('allegro');
@@ -245,9 +247,9 @@ window.onload = function() {
     document.getElementById('paczkomaty-btn').addEventListener('click', function() {
         getNewPackageFieldValues('paczkomaty');
     });
-    document.getElementById('shopee-btn').addEventListener('click', function() {
-        getShopeeFieldValues();
-    });
+//     document.getElementById('shopee-btn').addEventListener('click', function() {
+//         getShopeeFieldValues();
+//     });
 }
 
 

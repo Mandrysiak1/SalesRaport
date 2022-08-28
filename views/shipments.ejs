@@ -34,10 +34,13 @@
                             <span class="order-detail__label">Email: </span><span class="order-detail__value"><%=orderDetails.email%></span>
                         </div>
                         <div class="order-detail">
-                            <span class="order-detail__label">Płatność: </span><span class="order-detail__value"><%=orderDetails.payment_done%> <%=orderDetails.currency%></span>
+                            <span class="order-detail__label">Płatność dokonana: </span><span class="order-detail__value"><%=orderDetails.payment_done%> <%=orderDetails.currency%></span>
                         </div>
                         <div class="order-detail">
                             <span class="order-detail__label">Strona zamówienia: </span><span class="order-detail__value--newline"><a href="<%=orderDetails.order_page%>"><%=orderDetails.order_page%></a></span>
+                        </div>
+                        <div class="order-detail">
+                            <span class="order-detail__label">Sposób dostawy: </span><span class="order-detail__value" id="delivery-method-span"><%=orderDetails.delivery_method%></span>
                         </div>
                     </div>
                 </div>
@@ -79,6 +82,79 @@
                 </div>
             </div>
 
+
+            <div class="section-group row">
+                <h2 class="section-group__header">Przesyłki</h2>
+                <div class="col-7 section">
+                    <!-- <h2 class="section__header">Przesyłki</h2> -->
+                    <div class="section__container">
+                        <ul class="nav nav-pills" id="myTab" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link <%= defaultShipmentMethod.tab === 'allegro' ? 'active' : '' %>" id="allegro-tab" data-bs-toggle="pill" data-bs-target="#allegro-tab-pane" type="button" role="tab" aria-controls="allegro-tab-pane" aria-selected="true">Allegro.pl</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link <%= defaultShipmentMethod.tab === 'dhl' ? 'active' : '' %>" id="dhl-tab" data-bs-toggle="pill" data-bs-target="#dhl-tab-pane" type="button" role="tab" aria-controls="dhl-tab-pane" aria-selected="false">DHL PL</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link <%= defaultShipmentMethod.tab === 'inpost' ? 'active' : '' %>" id="inpost-tab" data-bs-toggle="pill" data-bs-target="#inpost-tab-pane" type="button" role="tab" aria-controls="inpost-tab-pane" aria-selected="false">InPost</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link <%= defaultShipmentMethod.tab === 'paczkomaty' ? 'active' : '' %>" id="paczkomaty-tab" data-bs-toggle="pill" data-bs-target="#paczkomaty-tab-pane" type="button" role="tab" aria-controls="paczkomaty-tab-pane" aria-selected="false">Paczkomaty</button>
+                            </li>
+                            <!-- <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="shopee-tab" data-bs-toggle="pill" data-bs-target="#shopee-tab-pane" type="button" role="tab" aria-controls="shopee-tab-pane" aria-selected="false">Shopee</button>
+                            </li> -->
+                        </ul>
+                        <div class="tab-content" id="myTabContent">
+                            <div class="tab-pane fade <%= defaultShipmentMethod.tab === 'allegro' ? 'active show' : '' %>" id="allegro-tab-pane" role="tabpanel" aria-labelledby="allegro-tab" tabindex="0">
+                                <%- include('./partials/formAllegro', {value: defaultShipmentMethod.value, insurance: insurance, refVal: orderDetails.order_id}); %>
+                            </div>
+                            <div class="tab-pane fade <%= defaultShipmentMethod.tab === 'dhl' ? 'active show' : '' %>" id="dhl-tab-pane" role="tabpanel" aria-labelledby="dhl-tab" tabindex="0">
+                                <%- include('./partials/formDHL', {value: defaultShipmentMethod.value, insurance: insurance, refVal: orderDetails.order_id}); %>
+                            </div>
+                            <div class="tab-pane fade <%= defaultShipmentMethod.tab === 'inpost' ? 'active show' : '' %>" id="inpost-tab-pane" role="tabpanel" aria-labelledby="inpost-tab" tabindex="0">
+                                <%- include('./partials/formInPost', {value: defaultShipmentMethod.value, insurance: insurance}); %>
+                            </div>
+                            <div class="tab-pane fade <%= defaultShipmentMethod.tab === 'paczkomaty' ? 'active show' : '' %>" id="paczkomaty-tab-pane" role="tabpanel" aria-labelledby="paczkomaty-tab" tabindex="0">
+                                <%- include('./partials/formPaczkomaty', {value: defaultShipmentMethod.value, insurance: insurance}); %>
+                            </div>
+                            <!-- <div class="tab-pane fade" id="shopee-tab-pane" role="tabpanel" aria-labelledby="shopee-tab" tabindex="0">
+                                <%- include('./partials/formShopee'); %>
+                            </div> -->
+                        </div>
+                    </div>
+                </div>
+                <div class="col-5 px-5">
+                    <div class="section__container row background background--light-blue" id="dimensions">
+                        <div class="col-3">
+                            <div class="dimension__input">
+                                <label for="dimension-weight">Waga</label>
+                                <input type="number" class="form-control dimension-input" id="dimension-weight" value="2">                
+                            </div>
+                        </div>
+                        <div class="col-3">
+                            <div class="dimension__input">
+                                <label for="dimension-length">Długość</label>
+                                <input type="number" class="form-control dimension-input" id="dimension-length" value="30">                
+                            </div>
+                        </div>
+                        <div class="col-3">
+                            <div class="dimension__input">
+                                <label for="dimension-width">Szerokość</label>
+                                <input type="number" class="form-control dimension-input" id="dimension-width" value="40">                
+                            </div>
+                        </div>
+                        <div class="col-3">
+                            <div class="dimension__input">
+                                <label for="dimension-height">Wysokość</label>
+                                <input type="number" class="form-control dimension-input" id="dimension-height" value="50">                
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
             <div class="section" id="packages">
                 <h2 class="section__header">Paczki</h2>
                 <table class="section__container table table-striped">
@@ -108,76 +184,7 @@
                 </table>
             </div>
 
-            <div class="section-group row">
-                <h2 class="section-group__header">Przesyłki</h2>
-                <div class="col-7 section">
-                    <!-- <h2 class="section__header">Przesyłki</h2> -->
-                    <div class="section__container">
-                        <ul class="nav nav-pills" id="myTab" role="tablist">
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link active" id="allegro-tab" data-bs-toggle="pill" data-bs-target="#allegro-tab-pane" type="button" role="tab" aria-controls="allegro-tab-pane" aria-selected="true">Allegro.pl</button>
-                            </li>
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link" id="dhl-tab" data-bs-toggle="pill" data-bs-target="#dhl-tab-pane" type="button" role="tab" aria-controls="dhl-tab-pane" aria-selected="false">DHL PL</button>
-                            </li>
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link" id="inpost-tab" data-bs-toggle="pill" data-bs-target="#inpost-tab-pane" type="button" role="tab" aria-controls="inpost-tab-pane" aria-selected="false">InPost</button>
-                            </li>
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link" id="paczkomaty-tab" data-bs-toggle="pill" data-bs-target="#paczkomaty-tab-pane" type="button" role="tab" aria-controls="paczkomaty-tab-pane" aria-selected="false">Paczkomaty</button>
-                            </li>
-                            <li class="nav-item" role="presentation">
-                                <button class="nav-link" id="shopee-tab" data-bs-toggle="pill" data-bs-target="#shopee-tab-pane" type="button" role="tab" aria-controls="shopee-tab-pane" aria-selected="false">Shopee</button>
-                            </li>
-                        </ul>
-                        <div class="tab-content" id="myTabContent">
-                            <div class="tab-pane fade show active" id="allegro-tab-pane" role="tabpanel" aria-labelledby="allegro-tab" tabindex="0">
-                                <%- include('./partials/formAllegro'); %>
-                            </div>
-                            <div class="tab-pane fade" id="dhl-tab-pane" role="tabpanel" aria-labelledby="dhl-tab" tabindex="0">
-                                <%- include('./partials/formDHL'); %>
-                            </div>
-                            <div class="tab-pane fade" id="inpost-tab-pane" role="tabpanel" aria-labelledby="inpost-tab" tabindex="0">
-                                <%- include('./partials/formInPost'); %>
-                            </div>
-                            <div class="tab-pane fade" id="paczkomaty-tab-pane" role="tabpanel" aria-labelledby="paczkomaty-tab" tabindex="0">
-                                <%- include('./partials/formPaczkomaty'); %>
-                            </div>
-                            <div class="tab-pane fade" id="shopee-tab-pane" role="tabpanel" aria-labelledby="shopee-tab" tabindex="0">
-                                <%- include('./partials/formShopee'); %>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-5 px-5">
-                    <div class="section__container row background background--light-blue" id="dimensions">
-                        <div class="col-3">
-                            <div class="dimension__input">
-                                <label for="dimension-weight">Waga</label>
-                                <input type="text" class="form-control dimension-input" id="dimension-weight">                
-                            </div>
-                        </div>
-                        <div class="col-3">
-                            <div class="dimension__input">
-                                <label for="dimension-length">Długość</label>
-                                <input type="text" class="form-control dimension-input" id="dimension-length">                
-                            </div>
-                        </div>
-                        <div class="col-3">
-                            <div class="dimension__input">
-                                <label for="dimension-width">Szerokość</label>
-                                <input type="text" class="form-control dimension-input" id="dimension-width">                
-                            </div>
-                        </div>
-                        <div class="col-3">
-                            <div class="dimension__input">
-                                <label for="dimension-height">Wysokość</label>
-                                <input type="text" class="form-control dimension-input" id="dimension-height">                
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            
 
             <div class="section-group" id="section-message">
                 <h2 class="section__header">Wiadomość e-mail</h2>
