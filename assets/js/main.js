@@ -8,6 +8,47 @@ var state = {
     przesylka: []
 };
 
+const alertContainer = document.getElementById('alerts')
+const toastElList = document.querySelectorAll('.toast')
+const toastList = [...toastElList].map(toastEl => new bootstrap.Toast(toastEl, "show"))
+
+const alert = (data) => {
+  const wrapper = document.createElement('div');
+
+//   wrapper.innerHTML = [
+//     `<div class="alert alert-${data.type} alert-dismissible" role="alert">`,
+//     `   <h4 class="alert-heading"><i class="bi ${data.icon}"></i> ${data.header}</h4>`,
+//     `   <div>${data.message}</div>`,
+//     '   <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>',
+//     '</div>'
+//   ].join('');
+
+  wrapper.innerHTML = [
+    `<div class="toast toast-${data.type} show" role="alert" aria-live="assertive" aria-atomic="true" data-bs-autohide="true">`,
+    `   <div class="toast-header">`,
+    `       <i class="bi ${data.icon}"></i>`,
+    `       <strong class="me-auto">${data.header}</strong>`,
+    `       <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>`,
+    `   </div>`,
+    `   <div class="toast-body">`,
+    `       ${data.message}`,
+    `   </div>`,
+    `</div>`
+  ].join('');
+  
+  let toast = new bootstrap.Toast(wrapper);
+  toast.show();
+  alertContainer.append(wrapper);
+  
+}
+
+// const alertTrigger = document.getElementById('liveAlertBtn')
+// if (alertTrigger) {
+//   alertTrigger.addEventListener('click', () => {
+//     alert('Nice, you triggered this alert message!', 'success')
+//   })
+// }
+
 async function deletePackage(package) {
 
     let packageData = {
@@ -31,13 +72,25 @@ async function deletePackage(package) {
     //myJson = "success"
     //myJson = "fail"
 
-    if(myJson === "success"){
-        let row = document.getElementById(package.package_id);
-        row.parentNode.removeChild(row);
-    }else if(myJson === "fail"){
+    const myJson="fail";
+    let data = {};
 
+    if(myJson === "success"){
+        // let row = document.getElementById(package.package_id);
+        // row.parentNode.removeChild(row);
+        data.type = 'success';
+        data.header = 'Sukces!';
+        data.message = 'Pomyślnie usunięto przesyłkę o numerze ' + package.package_id + '.';
+        data.icon = 'bi-exclamation-triangle-fill';
+        
+    }else if(myJson === "fail"){
+        data.type = 'danger';
+        data.header = 'Wystąpił błąd.'
+        data.message = 'Nie udało się usunąć przesyłki o numerze ' + package.package_id + '.';
+        data.icon = 'bi-check-circle-fill';
         console.log("niedziała")
     }
+    alert(data);
     
 }
 

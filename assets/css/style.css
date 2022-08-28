@@ -87,7 +87,8 @@ h3 {
     background-color: rgba(13, 110, 253, .075);
 }
 
-.table.table-striped tbody tr:nth-of-type(2n+1) {
+.table.table-striped tbody tr:nth-of-type(2n+1),
+.input-group-text {
     background-color:  rgba(13, 110, 253, .075) !important;
 }
 
@@ -101,4 +102,43 @@ h3 {
 
 .message__input {
     margin-bottom: .5rem;
+}
+
+.table>:not(caption)>*>* {
+    box-shadow: none;
+}
+
+.accordion-item,
+.table-striped,
+.table-striped td,
+.form-control,
+.form-select,
+.input-group-text {
+    border-color: #9ec1e5;
+}
+
+.accordion-button
+ {
+    background-color: rgba(13, 110, 253, .2);;
+}
+
+/* .accordion-body {
+    background-color: #dfeeff;
+} */
+
+.accordion-button:not(.collapsed) {
+    /* background-color: var(--bs-accordion-active-color); */
+    background-color: rgba(13, 110, 253, .35);
+    color: black;
+    font-weight: bolder;
+}
+
+.toast-container {
+    position: fixed;
+    bottom: 0;
+    right: 15px;
+}
+
+.alert-heading {
+    font-size: 1rem;
 }

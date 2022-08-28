@@ -44,25 +44,36 @@
                 <div class="col-6 section background background--light-blue" id="products">
                     <h2 class="section__header">Produkty</h2>
                     <div class="section__container products">
-                        <% orderDetails.products.forEach((product) => {%>
-                            <div class="product">
-                                <div class="product-detail">
-                                    <span class="product-detail__label">Produkt: </span><span class="product-detail__value"><%=product.name%></span>
+                        <div class="product accordion" id="productAccordion">
+                            <% orderDetails.products.forEach((product) => {%>
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header" id="heading-<%=product.product_id%>">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-<%=product.product_id %>" aria-expanded="false" aria-controls="collapse-<%=product.product_id %>">
+                                            <%=product.name%>
+                                        </button>
+                                    </h2>
+                                    <div id="collapse-<%=product.product_id %>" class="accordion-collapse collapse" aria-labelledby="heading-<%=product.product_id%>" data-bs-parent="#productAccordion">
+                                        <div class="accordion-body product-details">
+                                            <div class="product-detail">
+                                                <span class="product-detail__label">Produkt: </span><span class="product-detail__value"><%=product.name%></span>
+                                            </div>
+                                            <div class="product-detail">
+                                                <span class="product-detail__label">EAN: </span><span class="product-detail__value"><%=product.ean%></span>
+                                            </div>
+                                            <div class="product-detail">
+                                                <span class="product-detail__label">SKU: </span><span class="product-detail__value"><%=product.sku%></span>
+                                            </div>
+                                            <div class="product-detail">
+                                                <span class="product-detail__label">Ilość: </span><span class="product-detail__value"><%=product.quantity%></span>
+                                            </div>
+                                            <div class="product-detail">
+                                                <span class="product-detail__label">Cena brutto: </span><span class="product-detail__value"><%=product.price_brutto%> <%=orderDetails.currency%></span>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div class="product-detail">
-                                    <span class="product-detail__label">EAN: </span><span class="product-detail__value"><%=product.ean%></span>
-                                </div>
-                                <div class="product-detail">
-                                    <span class="product-detail__label">SKU: </span><span class="product-detail__value"><%=product.sku%></span>
-                                </div>
-                                <div class="product-detail">
-                                    <span class="product-detail__label">Ilość: </span><span class="product-detail__value"><%=product.quantity%></span>
-                                </div>
-                                <div class="product-detail">
-                                    <span class="product-detail__label">Cena brutto: </span><span class="product-detail__value"><%=product.price_brutto%> <%=orderDetails.currency%></span>
-                                </div>
-                            </div>
-                        <%});%>
+                            <%});%>
+                        </div>
                     </div>
                     
                 </div>
@@ -193,6 +204,9 @@
                 <button type="button" class="btn btn-primary" onclick="sendEmail()">Wyślij</button>
             </div>
 
+        </div>
+        <div class="toast-container" id="alerts">
+            <button type="button" class="btn btn-primary" id="liveAlertBtn">Show live alert</button>
         </div>
     </div>
     

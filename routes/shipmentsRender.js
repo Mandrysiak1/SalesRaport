@@ -2,7 +2,9 @@ const express = require('express')
 const router = express.Router()
 const { ConsoleMessage } = require('puppeteer')
 
-const {getOrderDetails,getOrderPackages,getOrderPackagesDetails} = require('./functions') 
+// const {getOrderDetails,getOrderPackages,getOrderPackagesDetails} = require('./functions') 
+
+const {getOrderDetails,getOrderPackages,getOrderPackagesDetails,getDefaultShipmentMethod,getRawInsuranceValue} = require('./functions')
 
 const trackingStatuses = ["Unknown", "Courier label created", "Shipped", "Not delivered", "Out for delivery", "Delivered", "Return", "Aviso", "Waiting at point", "Lost", "Canceled", "On the way"]
 
@@ -70,11 +72,13 @@ router.get('/:id', async (req, res) => {
     
     // if()
   
+    let insuranceValue = getRawInsuranceValue(orderDetails)
+    console.log("defvalue: " + JSON.stringify(getDefaultShipmentMethod(orderDetails)))
+    console.log(insuranceValue)
     res.render('shipments', {
       orderDetails: orderDetails.orders[0],
-      defaultShipmentMethod : {}
-      //cod:
-      //insurance:
+      defaultShipmentMethod : getDefaultShipmentMethod(orderDetails),
+      insurance: insuranceValue,
       orderPackages: orderPackages,
       deletePackage: "deletePackage"
     });
