@@ -244,6 +244,7 @@ async function createPackage()
     });
     
     const myJson = await response.json();
+    console.log("myJson: ", myJson)
 
     let data = {}
     if(myJson === "success"){

@@ -136,7 +136,7 @@ async function sendAllegroInpost(orderID, packageSize, cod, insurance) {
 
   console.log(res.data)
 
-  return res.data.status === 'SUCCESS' ? "success" : "fail"
+  return res.data.status === 'SUCCESS' ? {status:res.data.status} : {status:res.data.status, errorCode : res.data.error_code,errorMsg: res.data.error_message}
 
 }
 
@@ -168,7 +168,7 @@ async function sendInpostPaczkomat(orderID, packageSize, cod, insurance) {
 
   console.log(res.data)
 
-  return res.data.status === 'SUCCESS' ? "success" : "fail"
+  return res.data.status === 'SUCCESS' ? {status:res.data.status} : {status:res.data.status, errorCode : res.data.error_code,errorMsg: res.data.error_message}
 }
 
 async function sendInpostCourier(orderID, dimensions, cod, insurance) {
@@ -214,7 +214,7 @@ async function sendInpostCourier(orderID, dimensions, cod, insurance) {
 
   console.log(res.data)
 
-  return res.data.status === 'SUCCESS' ? "success" : "fail"
+  return res.data.status === 'SUCCESS' ? {status:res.data.status} : {status:res.data.status, errorCode : res.data.error_code,errorMsg: res.data.error_message}
 }
 
 async function sendAllegroCourier(orderID, deliveryMethod, dimensions, cod, insurance) {
@@ -263,7 +263,7 @@ async function sendAllegroCourier(orderID, deliveryMethod, dimensions, cod, insu
 
   console.log("allegro dpd: ",res.data)
 
-  return res.data.status === 'SUCCESS' ? "success" : "fail"
+  return res.data.status === 'SUCCESS' ? {status:res.data.status} : {status:res.data.status, errorCode : res.data.error_code,errorMsg: res.data.error_message}
 }
 
 async function getAllegroID(deliveryMethod) {
@@ -282,7 +282,7 @@ async function getAllegroID(deliveryMethod) {
 
   } else if (deliveryMethod === 'Allegro One Punkt (One Kurier)') {
 
-    return 17630959
+    return 11270948
 
   } else if (deliveryMethod === 'Allegro One Box (One Kurier)') {
 
@@ -314,8 +314,8 @@ async function removePackage(courier_code, package_id, package_number) {
     })
 
 
-  return res.data.status === 'SUCCESS' ? "success" : "fail"
-}
+    return res.data.status === 'SUCCESS' ? {status:res.data.status} : {status:res.data.status, errorCode : res.data.error_code,errorMsg: res.data.error_message}
+  }
 async function markOrderWithStar(orderID) {
 
   let params = {
