@@ -185,6 +185,10 @@ function getShopeeFieldValues(){
    console.log("shopee")
 }
 function getNewPackageFieldValues(type) {
+    // let deliverySelect = document.querySelector('#shipment-tab .tab-pane.active.show #service-select');
+    // let deliveryMethod = deliverySelect.options[deliverySelect.selectedIndex].text;
+    // state.deliveryMethod = deliveryMethod;
+
     let selector = '#' + type + '-tab-pane .form__input';
     let inputFields = document.querySelectorAll(selector);
     let values = [];
@@ -192,6 +196,7 @@ function getNewPackageFieldValues(type) {
         let input = inputField.getElementsByClassName('przesylki-input')[0];
         if(input && input.classList.contains('form-select')) {
             values.push({name: input.id.split('-')[0], value: input.options[input.selectedIndex].text});
+            state.deliveryMethod = input.options[input.selectedIndex].text;
         } else if (input && input.classList.contains('form-control')) {
             values.push({name: input.id.split('-')[0], value: input.value});
         }
@@ -264,10 +269,6 @@ window.onload = async function() {
     console.log('Func launched');
     // let deliveryMethod = document.getElementById('delivery-method-span').textContent;
     // state.deliveryMethod = deliveryMethod;
-
-    let deliverySelect = document.querySelector('#shipment-tab .tab-pane.active.show #service-select');
-    let deliveryMethod = deliverySelect.options[deliverySelect.selectedIndex].text;
-    state.deliveryMethod = deliveryMethod;
     // document.getElementById('delivery-method-span').textContent = deliveryMethod;
 
 
