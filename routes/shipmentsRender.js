@@ -14,7 +14,7 @@ router.get('/:id', async (req, res) => {
    //let orderID = 54117102
    // let orderID = 54267460
 
-    orderID = id
+    orderID = req.params.id
     let orderDetails =  await getOrderDetails(orderID)
   
     // console.log(orderDetails)
