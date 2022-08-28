@@ -139,6 +139,10 @@ h3 {
     right: 15px;
 }
 
+.toast-header {
+    background-color: transparent;
+}
+
 .alert-heading {
     font-size: 1rem;
 }

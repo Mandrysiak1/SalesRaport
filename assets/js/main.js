@@ -11,8 +11,6 @@ var state = {
 };
 
 const alertContainer = document.getElementById('alerts')
-const toastElList = document.querySelectorAll('.toast')
-const toastList = [...toastElList].map(toastEl => new bootstrap.Toast(toastEl, "show"))
 
 const alert = (data) => {
   const wrapper = document.createElement('div');
@@ -26,11 +24,11 @@ const alert = (data) => {
 //   ].join('');
 
   wrapper.innerHTML = [
-    `<div class="toast toast-${data.type} show" role="alert" aria-live="assertive" aria-atomic="true" data-bs-autohide="true">`,
+    `<div class="toast toast-${data.type} text-bg-${data.type} border-0 show" role="alert" aria-live="assertive" aria-atomic="true" data-bs-autohide="false">`,
     `   <div class="toast-header">`,
-    `       <i class="bi ${data.icon}"></i>`,
-    `       <strong class="me-auto">${data.header}</strong>`,
-    `       <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>`,
+    `       <i class="bi ${data.icon} mr-1"></i>`,
+    `       <strong class="me-auto"> ${data.header}</strong>`,
+    `       <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>`,
     `   </div>`,
     `   <div class="toast-body">`,
     `       ${data.message}`,
@@ -267,7 +265,7 @@ window.onload = async function() {
     // let deliveryMethod = document.getElementById('delivery-method-span').textContent;
     // state.deliveryMethod = deliveryMethod;
 
-    let deliverySelect = document.getElementById('service-select');
+    let deliverySelect = document.querySelector('#shipment-tab .tab-pane.active.show #service-select');
     let deliveryMethod = deliverySelect.options[deliverySelect.selectedIndex].text;
     state.deliveryMethod = deliveryMethod;
     // document.getElementById('delivery-method-span').textContent = deliveryMethod;
@@ -279,23 +277,23 @@ window.onload = async function() {
     let allegroTabBtn = document.getElementById('allegro-btn');
     allegroTabBtn.addEventListener('click',async function() {
         getNewPackageFieldValues('allegro');
-        await createPackage()
+        // await createPackage()
     });
 
     document.getElementById('dhl-btn').addEventListener('click',async function() {
         getNewPackageFieldValues('dhl');
-        await createPackage()
+        // await createPackage()
         
     });
 
     document.getElementById('inpost-btn').addEventListener('click',async function() {
         getNewPackageFieldValues('inpost');
-        await createPackage()
+        // await createPackage()
     });
 
     document.getElementById('paczkomaty-btn').addEventListener('click', async function() {
         getNewPackageFieldValues('paczkomaty');
-        await createPackage()
+        // await createPackage()
     });
 //     document.getElementById('shopee-btn').addEventListener('click', function() {
 //         getShopeeFieldValues();

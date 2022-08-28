@@ -88,7 +88,7 @@
                 <div class="col-7 section">
                     <!-- <h2 class="section__header">Przesyłki</h2> -->
                     <div class="section__container">
-                        <ul class="nav nav-pills" id="myTab" role="tablist">
+                        <ul class="nav nav-pills" id="shipment-tab" role="tablist">
                             <li class="nav-item" role="presentation">
                                 <button class="nav-link <%= defaultShipmentMethod.tab === 'allegro' ? 'active' : '' %>" id="allegro-tab" data-bs-toggle="pill" data-bs-target="#allegro-tab-pane" type="button" role="tab" aria-controls="allegro-tab-pane" aria-selected="true">Allegro.pl</button>
                             </li>
@@ -105,7 +105,7 @@
                                 <button class="nav-link" id="shopee-tab" data-bs-toggle="pill" data-bs-target="#shopee-tab-pane" type="button" role="tab" aria-controls="shopee-tab-pane" aria-selected="false">Shopee</button>
                             </li> -->
                         </ul>
-                        <div class="tab-content" id="myTabContent">
+                        <div class="tab-content" id="shipment-tab">
                             <div class="tab-pane fade <%= defaultShipmentMethod.tab === 'allegro' ? 'active show' : '' %>" id="allegro-tab-pane" role="tabpanel" aria-labelledby="allegro-tab" tabindex="0">
                                 <%- include('./partials/formAllegro', {value: defaultShipmentMethod.value, insurance: insurance, refVal: orderDetails.order_id}); %>
                             </div>
