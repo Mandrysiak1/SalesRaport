@@ -6,7 +6,7 @@ var nodemailer = require('nodemailer');
 router.use(require('body-parser').json());
 const fs = require('fs').promises;
 
-const { getOrderDetails, checkIfCod, getInsuranceValue } = require('./functions');
+const { getOrderDetails, checkIfCod, getInsuranceValue, getOrderPackages } = require('./functions');
 const { rootCertificates } = require('tls');
 const { read, readSync } = require('fs');
 
@@ -52,7 +52,7 @@ router.post('/create', async (req, res) => {
   // console.log("insurance " + insurance)
 
   let resp = await addPackage(orderID, packageSize, dimensions, deliveryMethod, cod, insurance)
-  let details = await getOrderDetails(orderID)
+  let details = await getOrderPackages(orderID)
   
 
   let obj = {...resp,...details}
