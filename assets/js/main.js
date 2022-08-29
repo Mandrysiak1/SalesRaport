@@ -10,31 +10,47 @@ var state = {
     orderId: ''
 };
 
+const AlertType = {
+    Success: 'success',
+    Fail: 'danger',
+    Info: 'info'
+}
+
 const alertContainer = document.getElementById('alerts')
 
-const alert = (data) => {
-  const wrapper = document.createElement('div');
+const alert = (alertType, message) => {
+    let data = {};
+    data.message = message;
+    switch(alertType) {
+        case AlertType.Success:
+            data.type = alertType;
+            data.icon = 'bi-check-circle-fill';
+            data.header = 'Sukces!';
+            break;
+        case AlertType.Fail:
+            data.type = alertType;
+            data.icon = 'bi-exclamation-triangle-fill';
+            data.header = 'Wystąpił błąd.';
+            break;
+        default:
+            data.type = alertType;
+            data.icon = 'bi-info-circle-fill';
+            data.header = 'Informacja.';
+    }
 
-//   wrapper.innerHTML = [
-//     `<div class="alert alert-${data.type} alert-dismissible" role="alert">`,
-//     `   <h4 class="alert-heading"><i class="bi ${data.icon}"></i> ${data.header}</h4>`,
-//     `   <div>${data.message}</div>`,
-//     '   <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>',
-//     '</div>'
-//   ].join('');
-
-  wrapper.innerHTML = [
-    `<div class="toast toast-${data.type} text-bg-${data.type} border-0 show" role="alert" aria-live="assertive" aria-atomic="true" data-bs-autohide="false">`,
-    `   <div class="toast-header">`,
-    `       <i class="bi ${data.icon} mr-1"></i>`,
-    `       <strong class="me-auto"> ${data.header}</strong>`,
-    `       <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>`,
-    `   </div>`,
-    `   <div class="toast-body">`,
-    `       ${data.message}`,
-    `   </div>`,
-    `</div>`
-  ].join('');
+    const wrapper = document.createElement('div');
+    wrapper.innerHTML = [
+        `<div class="toast toast-${data.type} text-bg-${data.type} border-0 show" role="alert" aria-live="assertive" aria-atomic="true" data-bs-autohide="false">`,
+        `   <div class="toast-header border-0 pb-0">`,
+        `       <i class="bi ${data.icon} text-bg-${data.type}"></i>`,
+        `       <strong class="me-auto text-bg-${data.type} px-1"> ${data.header}</strong>`,
+        `       <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>`,
+        `   </div>`,
+        `   <div class="toast-body pt-1">`,
+        `       ${data.message}`,
+        `   </div>`,
+        `</div>`
+    ].join('');
   
   let toast = new bootstrap.Toast(wrapper);
   toast.show();
@@ -72,80 +88,74 @@ async function deletePackage(package) {
     //myJson = "success"
     //myJson = "fail"
 
-    const myJson="fail";
+    const myJson="success";
     let data = {};
 
     if(myJson === "success"){
-        // let row = document.getElementById(package.package_id);
-        // row.parentNode.removeChild(row);
-        data.type = 'success';
-        data.header = 'Sukces!';
-        data.message = 'Pomyślnie usunięto przesyłkę o numerze ' + package.package_id + '.';
-        data.icon = 'bi-exclamation-triangle-fill';
+        let row = document.getElementById(package.package_id);
+        row.parentNode.removeChild(row);
+
+        let message = 'Pomyślnie usunięto przesyłkę o numerze ' + package.package_id + '.';
+        alert(AlertType.Success, message);
         
     }else if(myJson === "fail"){
-        data.type = 'danger';
-        data.header = 'Wystąpił błąd.'
-        data.message = 'Nie udało się usunąć przesyłki o numerze ' + package.package_id + '.';
-        data.icon = 'bi-check-circle-fill';
+        let message = 'Nie udało się usunąć przesyłki o numerze ' + package.package_id + '.';
+        alert(AlertType.Fail, message);
         console.log("niedziała")
     }
-    alert(data);
+    
     
 }
 
+function createPackageListItemAndAppend(package) {
+    if(state.packages.length === 0) {
+        let emptyMessage = document.getElementById('labels-empty');
+        emptyMessage.style.display = "none";
+    }
+    let packageList = document.getElementById('labels-list');
+    let li = document.createElement('li');
+    li.classList.add('labels-list__element');
+    li.appendChild(document.createTextNode(package.courier_package_nr + " "));
+    li.setAttribute('id', "li_" + package.courier_package_nr);
+    let button = document.createElement('button');
+    button.classList.add('btn', 'btn-danger', 'btn-sm');
+    button.addEventListener('click', function() {
+        removePackageFromList(package.courier_package_nr)
+    });
+    button.innerHTML = '<i class="bi bi-dash"></i>';
+    li.appendChild(button);
+    packageList.appendChild(li);
+}
+
 function addPackageToList(package) {
-
-
     let alreadyInArray = state.packages.some(pkg => pkg.courier_package_nr === package.courier_package_nr) ? true : false;       
-    if(!alreadyInArray) {
-        if(state.packages.length === 0) {
-            let emptyMessage = document.getElementById('labels-empty');
-            emptyMessage.style.display = "none";
-        }
+    if(!alreadyInArray) 
+    {
+        createPackageListItemAndAppend(package);
     
-        let packageList = document.getElementById('labels-list');
-    
-        let li = document.createElement('li');
-        li.classList.add('labels-list__element');
-        li.appendChild(document.createTextNode(package.courier_package_nr + " "));
-    
-        li.setAttribute('id', "li_" + package.courier_package_nr);
-    
-        let button = document.createElement('button');
-        button.classList.add('btn', 'btn-danger', 'btn-sm');
-        // button.setAttribute("onclick", "removePackageFromList(event, this)")
-        // button.setAttribute("onclick", "removePackageFromList("+package.courier_package_nr.toString()+")")
-        // button.onclick = "removePackageFromList(package.courier_package_nr)";
-
-        button.addEventListener('click', function() {
-            removePackageFromList(package.courier_package_nr)
-        });
-
-        button.innerHTML = '<i class="bi bi-dash"></i>';
-        li.appendChild(button);
-    
-        packageList.appendChild(li);
-    
-        state.packages.push(package);
+        let packageData = {
+            'package_id': package.package_id,
+            'courier_code': package.courier_code,
+            'package_number': package.package_number,
+            'courier_package_nr': package.courier_package_nr
+        };
+        state.packages.push(packageData);
+        let message = 'Pomyślnie dodano etykietę przesyłki o numerze ' + package.courier_package_nr + '.';
+        alert(AlertType.Success, message);
+    } 
+    else {
+        let message = 'Nie udało się dodać etykiety przesyłki ' + package.courier_package_nr + ' - jest ona już dodana do listy.';
+        alert(AlertType.Fail, message);
     }
         
     console.log(state);
 }
 
 function removePackageFromList(courier_package_nr) {
-    console.log(courier_package_nr);
     let packageId = courier_package_nr;
     let liSource = document.getElementById("li_" + packageId);
-    // target = target || window.event;
-    // let eventSource = target.target || target.srcElement;
-    // let liSource = eventSource.parentNode.parentNode;
-    // let packageId = liSource.id;
-
     state.packages  = state.packages.filter(package => package.courier_package_nr !== packageId);
     console.log("removeFromList", state);
-
-    // liSource.parentNode.removeChild(liSource);
     liSource.outerHTML = "";
 
     if(state.packages.length === 0) {
@@ -153,23 +163,6 @@ function removePackageFromList(courier_package_nr) {
         emptyMessage.style.display = "block";
     }
 }
-
-// function removePackageFromList(target) {
-//     target = target || window.event;
-//     let eventSource = target.target || target.srcElement;
-//     let liSource = eventSource.parentNode.parentNode;
-//     let packageId = liSource.id;
-
-//     state.packages  = state.packages.filter(package => package.courier_package_nr !== packageId);
-//     console.log("removeFromList", state);
-
-//     liSource.parentNode.removeChild(liSource);
-
-//     if(state.packages.length === 0) {
-//         let emptyMessage = document.getElementById('labels-empty');
-//         emptyMessage.style.display = "block";
-//     }
-// }
 
 function sendEmail() {
     let messageTextarea = document.getElementById('email-message');
@@ -185,9 +178,6 @@ function getShopeeFieldValues(){
    console.log("shopee")
 }
 function getNewPackageFieldValues(type) {
-    // let deliverySelect = document.querySelector('#shipment-tab .tab-pane.active.show #service-select');
-    // let deliveryMethod = deliverySelect.options[deliverySelect.selectedIndex].text;
-    // state.deliveryMethod = deliveryMethod;
 
     let selector = '#' + type + '-tab-pane .form__input';
     let inputFields = document.querySelectorAll(selector);
