@@ -8,6 +8,7 @@ const fs = require('fs').promises;
 
 const { getOrderDetails, checkIfCod, getInsuranceValue } = require('./functions');
 const { rootCertificates } = require('tls');
+const { read, readSync } = require('fs');
 
 router.get('/email', async (req,res) => {
 
@@ -155,7 +156,10 @@ async function sendAllegroInpost(orderID, packageSize, cod, insurance) {
 
   console.log(res.data)
 
-  return res.data.status === 'SUCCESS' ? {status:res.data.status} : {status:res.data.status, errorCode : res.data.error_code,errorMsg: res.data.error_message}
+  return res.data.status === 'SUCCESS' ?  
+  {status:res.data.status,
+   package:{package_id : res.data.package_id, courier_code:"paczkomaty",package_number:res.data.package_number,courier_package_nr: res.data.courier_inner_number}} 
+ :{status:res.data.status, errorCode : res.data.error_code,errorMsg: res.data.error_message}
 
 }
 
@@ -187,7 +191,10 @@ async function sendInpostPaczkomat(orderID, packageSize, cod, insurance) {
 
   console.log(res.data)
 
-  return res.data.status === 'SUCCESS' ? {status:res.data.status} : {status:res.data.status, errorCode : res.data.error_code,errorMsg: res.data.error_message}
+  return res.data.status === 'SUCCESS' ?  
+  {status:res.data.status,
+   package:{package_id : res.data.package_id, courier_code:"paczkomaty",package_number:res.data.package_number,courier_package_nr: res.data.courier_inner_number}} 
+ :{status:res.data.status, errorCode : res.data.error_code,errorMsg: res.data.error_message}
 }
 
 async function sendInpostCourier(orderID, dimensions, cod, insurance) {
@@ -233,8 +240,14 @@ async function sendInpostCourier(orderID, dimensions, cod, insurance) {
 
   console.log(res.data)
 
-  return res.data.status === 'SUCCESS' ? {status:res.data.status} : {status:res.data.status, errorCode : res.data.error_code,errorMsg: res.data.error_message}
+  return res.data.status === 'SUCCESS' ?  
+  {status:res.data.status,
+   package:{package_id : res.data.package_id, courier_code:"inpostkurier",package_number:res.data.package_number,courier_package_nr: res.data.courier_inner_number}} 
+ :{status:res.data.status, errorCode : res.data.error_code,errorMsg: res.data.error_message}
+
+
 }
+ 
 
 async function sendAllegroCourier(orderID, deliveryMethod, dimensions, cod, insurance) {
 
@@ -282,7 +295,10 @@ async function sendAllegroCourier(orderID, deliveryMethod, dimensions, cod, insu
 
   console.log("allegro dpd: ",res.data)
 
-  return res.data.status === 'SUCCESS' ? {status:res.data.status} : {status:res.data.status, errorCode : res.data.error_code,errorMsg: res.data.error_message}
+  return res.data.status === 'SUCCESS' ?  
+  {status:res.data.status,
+   package:{package_id : res.data.package_id, courier_code:"allegrokurier",package_number:res.data.package_number,courier_package_nr: res.data.courier_inner_number}} 
+ :{status:res.data.status, errorCode : res.data.error_code,errorMsg: res.data.error_message}
 }
 
 async function getAllegroID(deliveryMethod) {
