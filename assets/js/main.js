@@ -16,6 +16,8 @@ const AlertType = {
     Info: 'info'
 }
 
+const trackingStatuses = ["Unknown", "Courier label created", "Shipped", "Not delivered", "Out for delivery", "Delivered", "Return", "Aviso", "Waiting at point", "Lost", "Canceled", "On the way"]
+
 const alertContainer = document.getElementById('alerts')
 
 const alert = (alertType, message) => {
@@ -66,7 +68,7 @@ const alert = (alertType, message) => {
 // }
 
 async function deletePackage(packageId) {
-    let package = orderPackages.packages.find(package => Number.parseInt(package.package_id) === packageId);
+    let package = orderPackages.packages.find(package => Number.parseInt(package.package_id) === Number.parseInt(packageId));
 
     let packageData = {
         'package_id': package.package_id,
@@ -75,21 +77,23 @@ async function deletePackage(packageId) {
     };
 
     
-    // console.log(packageData);
-    // const response = await fetch('/shipments/remove', {
-    //     method: 'POST',
-    //     body: JSON.stringify(packageData),
-    //     headers: {
-    //         'Content-Type': 'application/json'
-    //     }
-    // });
+    console.log(packageData);
+    const response = await fetch('/shipments/remove', {
+        method: 'POST',
+        body: JSON.stringify(packageData),
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    });
     
-    // const myJson = await response.json();
+    let myJson = await response.json();
+    myJson = myJson.status.toLowerCase();
+    console.log('myjson', myJson);
 
-    //myJson = "success"
-    //myJson = "fail"
+    // //myJson = "success"
+    // //myJson = "fail"
 
-    const myJson="success";
+    // const myJson="success";
     let data = {};
 
     if(myJson === "success"){
@@ -129,7 +133,10 @@ function createPackageListItemAndAppend(package) {
 }
 
 function addPackageToList(packageId) {
-    let package = orderPackages.packages.find(package => Number.parseInt(package.package_id) === packageId);
+    let package = orderPackages.packages.find(package => Number.parseInt(package.package_id) === Number.parseInt(packageId));
+    console.log('orderpackages in addpkgtolist', orderPackages);
+    console.log('orderpackages in addpkgtolist', orderPackages.packages);
+    console.log('package in addPackageToList', package);
     let alreadyInArray = state.packages.some(pkg => pkg.courier_package_nr === package.courier_package_nr) ? true : false;       
     if(!alreadyInArray) 
     {
@@ -227,6 +234,9 @@ function getNewPackageFieldValues(type) {
 
 async function createPackage()
 {
+    let preloader = document.getElementById('package-preloader');
+    preloader.style.display = "inline-block";
+
     const response = await fetch('/shipments/create', {
         method: 'POST',
         body: JSON.stringify(state),
@@ -238,6 +248,7 @@ async function createPackage()
     const myJson = await response.json();
     const responseStatus = myJson.status.toLowerCase();
     const package = myJson.package;
+    const packages = myJson.packages;
 
     console.log(myJson);
 
@@ -253,7 +264,14 @@ async function createPackage()
         // row.parentNode.removeChild(row);
 
         message = 'Pomyślnie utworzono przesyłkę o numerze ' + package.courier_package_nr + '.';
+        console.log('stare', orderPackages);
+        
+        orderPackages.packages = packages;
 
+        console.log('nowe', orderPackages);
+
+
+        /*
         let tbl = document.querySelector('#packages .table');
         let row = tbl.insertRow();
         row.setAttribute('id', '<%=package.package_id%>');
@@ -266,8 +284,7 @@ async function createPackage()
         a.href = package.tracking_url;
         row.insertCell().appendChild(a);
         row.insertCell().appendChild(document.createTextNode(package.status));
-        
-
+    
         let package = {};
         let deleteButton = document.createElement('button');
         deleteButton.classList.add('btn', 'btn-danger', 'btn-sm', 'me-1');
@@ -290,11 +307,54 @@ async function createPackage()
         let buttonCell = row.insertCell();
         buttonCell.appendChild(deleteButton);
         buttonCell.appendChild(addButton);
+        */
 
-        // row.insertCell().appendChild(deleteButton).appendChild(addButton);
+        let tbdy = document.querySelector('#packages tbody');
+        tbdy.innerHTML = '';
 
+        for (let pkg of packages) {
+            let tbl = document.querySelector('#packages .table tbody');
+            let row = tbl.insertRow();
+            row.setAttribute('id', pkg.package_id);
+            row.insertCell().appendChild(document.createTextNode('data'));
+            row.insertCell().appendChild(document.createTextNode(pkg.courier_code));
+            let a = document.createElement('a');
+            let linkText = document.createTextNode(pkg.courier_package_nr);
+            a.appendChild(linkText);
+            a.title = pkg.courier_package_nr;
+            a.href = pkg.tracking_url;
+            row.insertCell().appendChild(a);
+            row.insertCell().appendChild(document.createTextNode(trackingStatuses[pkg.tracking_status]));
+        
+            let deleteButton = document.createElement('button');
+            deleteButton.classList.add('btn', 'btn-danger', 'btn-sm', 'me-1');
+            deleteButton.setAttribute('type', 'button');
+            deleteButton.addEventListener('click', function() {
+                console.log(pkg);
+                deletePackage(pkg.package_id);
+                // console.log("deletePackage");
+            });
+            deleteButton.innerHTML = '<i class="bi bi-trash-fill"></i>';
+    
+            let addButton = document.createElement('button');
+            addButton.classList.add('btn', 'btn-success', 'btn-sm');
+            addButton.setAttribute('type', 'button');
+            addButton.addEventListener('click', function() {
+                console.log(pkg);
+                addPackageToList(pkg.package_id);
+                // console.log("addPackage");
+            });
+            addButton.innerHTML = '<i class="bi bi-plus"></i>';
+    
+            let buttonCell = row.insertCell();
+            buttonCell.appendChild(deleteButton);
+            buttonCell.appendChild(addButton);
+        }
+
+        preloader.style.display = "none";
         alert(AlertType.Success, message);
-    }else if(responseStatus === "fail"){
+    }
+    else if(responseStatus === "fail"){
        message = 'Nie udało się utworzyć przesyłki. ';
        message += myJson.errorMsg;
 

@@ -70,7 +70,7 @@ router.post('/remove', async (req, res) => {
   let package_number = req.body.package_number
   let courier_code = req.body.courier_code
 
- // let response = await removePackage(courier_code, package_id, package_number)
+ let response = await removePackage(courier_code, package_id, package_number)
 
   console.log(courier_code, package_number, package_id)
 
