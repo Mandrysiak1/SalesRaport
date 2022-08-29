@@ -56,7 +56,7 @@ router.post('/create', async (req, res) => {
   
 
   let obj = {...resp,...details}
-  console.log(obj)
+  console.log('obj', obj)
 
   res.json(obj);
 

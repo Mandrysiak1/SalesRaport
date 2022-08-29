@@ -61,7 +61,8 @@ h3 {
     margin: 0;
 }
 
-.section__header {
+.section__header,
+.section-group__header {
     margin-bottom: 1rem;
 }
 
@@ -146,3 +147,13 @@ h3 {
 .alert-heading {
     font-size: 1rem;
 }
+
+.td-button-container {
+    display: flex;
+    justify-content: flex-start;
+    flex-direction: row;
+}
+
+/* table { border-collapse: collapse; border-spacing: 0 }
+td { padding: 0 }
+.btn-cell { border: 0 } */

@@ -65,7 +65,8 @@ const alert = (alertType, message) => {
 //   })
 // }
 
-async function deletePackage(package) {
+async function deletePackage(packageId) {
+    let package = orderPackages.packages.find(package => Number.parseInt(package.package_id) === packageId);
 
     let packageData = {
         'package_id': package.package_id,
@@ -74,7 +75,7 @@ async function deletePackage(package) {
     };
 
     
-    console.log(packageData);
+    // console.log(packageData);
     // const response = await fetch('/shipments/remove', {
     //     method: 'POST',
     //     body: JSON.stringify(packageData),
@@ -127,7 +128,8 @@ function createPackageListItemAndAppend(package) {
     packageList.appendChild(li);
 }
 
-function addPackageToList(package) {
+function addPackageToList(packageId) {
+    let package = orderPackages.packages.find(package => Number.parseInt(package.package_id) === packageId);
     let alreadyInArray = state.packages.some(pkg => pkg.courier_package_nr === package.courier_package_nr) ? true : false;       
     if(!alreadyInArray) 
     {
@@ -234,30 +236,80 @@ async function createPackage()
     });
     
     const myJson = await response.json();
-    console.log("myJson: ", myJson)
+    const responseStatus = myJson.status.toLowerCase();
+    const package = myJson.package;
 
-    let data = {}
-    if(myJson === "success"){
+    console.log(myJson);
+
+    // const responseStatus = 'success';
+    // console.log("myJson: ", responseStatus)
+
+    
+
+    let message = '';
+
+    if(responseStatus === "success"){
         // let row = document.getElementById(package.package_id);
         // row.parentNode.removeChild(row);
-        data.type = 'success';
-        data.header = 'Sukces!';
-        //data.message = 'Pomyślnie usunięto przesyłkę o numerze ' + package.package_id + '.';
-        data.icon = 'bi-exclamation-triangle-fill';
+
+        message = 'Pomyślnie utworzono przesyłkę o numerze ' + package.courier_package_nr + '.';
+
+        let tbl = document.querySelector('#packages .table');
+        let row = tbl.insertRow();
+        row.setAttribute('id', '<%=package.package_id%>');
+        row.insertCell().appendChild(document.createTextNode('data'));
+        row.insertCell().appendChild(document.createTextNode(package.courier_code));
+        let a = document.createElement('a');
+        let linkText = document.createTextNode(package.courier_package_nr);
+        a.appendChild(linkText);
+        a.title = package.courier_package_nr;
+        a.href = package.tracking_url;
+        row.insertCell().appendChild(a);
+        row.insertCell().appendChild(document.createTextNode(package.status));
         
-    }else if(myJson === "fail"){
-        data.type = 'danger';
-        data.header = 'Wystąpił błąd.'
-       // data.message = 'Nie udało się usunąć przesyłki o numerze ' + package.package_id + '.';
-        data.icon = 'bi-check-circle-fill';
+
+        let package = {};
+        let deleteButton = document.createElement('button');
+        deleteButton.classList.add('btn', 'btn-danger', 'btn-sm', 'me-1');
+        deleteButton.setAttribute('type', 'button');
+        deleteButton.addEventListener('click', function() {
+            // deletePackage(package.package_id);
+            console.log("deletePackage");
+        });
+        deleteButton.innerHTML = '<i class="bi bi-trash-fill"></i>';
+
+        let addButton = document.createElement('button');
+        addButton.classList.add('btn', 'btn-success', 'btn-sm');
+        addButton.setAttribute('type', 'button');
+        addButton.addEventListener('click', function() {
+            // addPackageToList(package.package_id);
+            console.log("addPackage");
+        });
+        addButton.innerHTML = '<i class="bi bi-plus"></i>';
+
+        let buttonCell = row.insertCell();
+        buttonCell.appendChild(deleteButton);
+        buttonCell.appendChild(addButton);
+
+        // row.insertCell().appendChild(deleteButton).appendChild(addButton);
+
+        alert(AlertType.Success, message);
+    }else if(responseStatus === "fail"){
+       message = 'Nie udało się utworzyć przesyłki. ';
+       message += myJson.errorMsg;
+
         console.log("niedziała")
+        alert(AlertType.Fail, message);
     }
-    alert(data);
+    
 
 }
 
 window.onload = async function() {
     console.log('Func launched');
+    console.log('orderPackages', orderPackages);
+    orderPackages = JSON.parse(orderPackages);
+    console.log('orderPackagesparse', orderPackages);
     // let deliveryMethod = document.getElementById('delivery-method-span').textContent;
     // state.deliveryMethod = deliveryMethod;
     // document.getElementById('delivery-method-span').textContent = deliveryMethod;

@@ -34,35 +34,39 @@ router.get('/:id', async (req, res) => {
     }
   
     console.log(orderPackages)
+    console.log('tempadd', tempadd);
    
   
     let orderPackagesDetails = await getOrderPackagesDetails(tempadd)
+    console.log('orderPackagesDetails.packages_history', orderPackagesDetails.packages_history);
     if(orderPackagesDetails.packages_history && orderPackagesDetails.packages_history.length > 0 ){
 
         for (let index = 0; index < Object.keys(orderPackagesDetails.packages_history).length ; index++) {
         let objindex = Object.keys(orderPackagesDetails.packages_history)[index]
         for (let inner_index = 0; inner_index < orderPackagesDetails.packages_history[objindex].length; inner_index++) {
             const element = orderPackagesDetails.packages_history[objindex][inner_index];
-            console.log(element);
+            console.log('element', element);
         } 
         }
     }else{
-
+      console.log("ELSE");
     }
   
    // console.log(orderPackagesDetails);
   
   
     for(let i = 0 ; i < orderPackages.packages.length; i++) {
-      let obj = orderPackagesDetails.packages_history;
+      // let obj = orderPackagesDetails.packages_history[Object.keys(orderPackagesDetails.packages_history)[i]];
+      // console.log('obj', obj);
 
       
 
-      if(obj && obj.length === 0) {
-        orderPackages.packages[i].data_nadania = new Date(orderPackages.packages[i].tracking_status_date * 1000);
-      } else {
-        orderPackages.packages[i].data_nadania = new Date(orderPackagesDetails.packages_history[Object.keys(orderPackagesDetails.packages_history)[i]][0].tracking_status_date * 1000);
-      }
+      // if(obj && obj.length === 0) {
+      //   orderPackages.packages[i].data_nadania = new Date(orderPackages.packages[i].tracking_status_date * 1000);
+      // } else {
+      //   console.log('pkghis', orderPackagesDetails.packages_history);
+      //   orderPackages.packages[i].data_nadania = new Date(orderPackagesDetails.packages_history[Object.keys(orderPackagesDetails.packages_history)[i]][0].tracking_status_date * 1000);
+      // }
       orderPackages.packages[i].status = trackingStatuses[orderPackages.packages[i].tracking_status];
       orderPackages.packages[i].package_number = orderPackages.packages[i].courier_package_nr;
     }

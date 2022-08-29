@@ -84,7 +84,7 @@
 
 
             <div class="section-group row">
-                <h2 class="section-group__header">Przesyłki</h2>
+                <h2 class="section-group__header">Dodaj paczkę</h2>
                 <div class="col-7 section">
                     <!-- <h2 class="section__header">Przesyłki</h2> -->
                     <div class="section__container">
@@ -175,8 +175,10 @@
                                 <td><a href="<%=package.tracking_url %>"><%=package.courier_package_nr%></a></td>
                                 <td><%=package.status%></td>
                                 <td>
-                                    <button type="button" class="btn btn-danger btn-sm" onclick="deletePackage(<%=JSON.stringify(package)%>)"><i class="bi bi-trash-fill"></i></button>
-                                    <button type="button" class="btn btn-success btn-sm" onclick="addPackageToList(<%=JSON.stringify(package)%>)"><i class="bi bi-plus"></i></button>
+                                    <div class="td-button-container">
+                                        <button type="button" class="btn btn-danger btn-sm me-1 btn-cell" onclick="deletePackage(<%=package.package_id%>)"><i class="bi bi-trash-fill"></i></button>
+                                        <button type="button" class="btn btn-success btn-sm btn-cell" onclick="addPackageToList(<%=package.package_id%>)"><i class="bi bi-plus"></i></button>
+                                    </div>
                                 </td>
                             </tr>
                         <%});%>
@@ -218,6 +220,9 @@
     <!-- JavaScript Bundle with Popper -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-A3rJD856KowSb7dwlZdYEkO39Gagi7vIsF0jrRAoQmDKKtQBHUuLZ9AsSv4jD4Xa" crossorigin="anonymous"></script>
     <script src="/js/main.js"></script>
+    <script>
+        var orderPackages = '<%- JSON.stringify(orderPackages) %>'; // test is now a valid js object
+    </script>
 </body>
  
 </html>   
