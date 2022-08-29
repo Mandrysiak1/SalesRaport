@@ -3,10 +3,18 @@ const router = express.Router()
 const axios = require('axios')
 const { ConsoleMessage } = require('puppeteer')
 router.use(require('body-parser').json());
-
+require('js-base64').Base64.atob()
 const { getOrderDetails, checkIfCod, getInsuranceValue } = require('./functions');
 
+router.post('/email', async (req,res) => {
 
+  let emailTopic = ''
+  let emailContent = ''
+  let emailAdresses = []
+  let labelNumbers = [] //to co do remove
+  await getLabel(labelNumbers)
+  await sendEmail(emailTopic,emailContent,emailAdresses)
+})
 
 router.post('/create', async (req, res) => {
  
@@ -103,8 +111,8 @@ async function createPackages(orderID, packageSize, dimensions, deliveryMethod, 
   } else if (deliveryMethod === 'Przesyłka kurierska standardowa') {
     return await sendInpostCourier(orderID, dimensions, cod, insurance)
   } else {
-    console.log("tu")
-    return "fail"
+    console.log("ERROR: NO METHOD IN CREATE PACKAGE")
+    return {status:"ERROR", errorCode :"LOGIC ERROR" , errorMsg: "Nie znaleziono metody w CREATE PACKAGE"}
   }
 
 }
@@ -355,6 +363,32 @@ async function unmarkOrderWithStar(orderID) {
 async function sendEmail() {
 
 
+
+}
+
+async function getLabel(labelNumbers){
+
+  console.log("orderSource from moveorder: " + orderSource)
+  let statusID = getCategoryStatus(orderSource)
+  console.log("statusID from moveorder: " + statusID)
+
+  let params = {
+    "courier_code": orderID,
+    "package_id": statusID,
+    "package_number" : package_number
+  };
+
+  let data = {
+    'method': 'getLabel',
+    'parameters': JSON.stringify(params)
+  };
+  let info = await axios
+    .post('https://api.baselinker.com/connector.php', data, {
+      headers: { "X-BLToken": process.env.BASELINKER_API_KEY, 'Content-Type': 'multipart/form-data' }
+    })
+
+
+  console.log("status changes: " + info.status)
 
 }
 async function moveOrderToProperCategory(orderID, orderSource) {
