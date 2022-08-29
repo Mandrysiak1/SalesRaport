@@ -53,10 +53,10 @@ router.post('/create', async (req, res) => {
 
   let resp = await addPackage(orderID, packageSize, dimensions, deliveryMethod, cod, insurance)
   let details = await getOrderDetails(orderID)
-  console.log(resp)
   
 
   let obj = {...resp,...details}
+  console.log(obj)
 
   res.json(obj);
 
