@@ -16,12 +16,14 @@ router.post('/email', async (req, res) => {
   console.log("req:", req.body)
   let emailTopic = req.body.email.topic
   let emailContent = req.body.email.message
+  
   let emailAdresses = req.body.email.receivers
- //let emailAdresses = []
+  
   let labelNumbers = req.body.packages
   let orderId = req.body.orderId
   let moveToCategory = req.body.email.moveToCategory
-
+  let order_source = await getOrderDetails(orderId)
+  emailcontent = emailContent + prepEmailContent(order_source)
   //labelNumbers.push({courierCode: "paczkomaty", package_number:'642244367266620124418898',package_id :'36190738'})
 
   let labels = await getLabels(labelNumbers)
@@ -34,8 +36,6 @@ router.post('/email', async (req, res) => {
     await sendEmail(emailTopic, emailContent, emailAdresses, labels)
     if(moveToCategory){
 
-        let order_source = await getOrderDetails(orderId)
-       console.log("os:",order_source.orders[0].order_source)
         await moveOrderToProperCategory(orderId,order_source.orders[0].order_source)
       }
     res.json({ status: "SUCCESS" })
@@ -454,6 +454,19 @@ async function sendEmail(emailTopic, emailContent, emailAdresses, labels) {
   });
 
   return "success"
+
+}
+
+function prepEmailContent(order_source){
+  let string = '\n\n\nLISTA WYSYŁKOWA\n'
+
+  let index = 1
+  for(let element in order_source.orders[0].products)
+  {
+    index++
+    string = string +"\n" +index + ". nazwa:  " + element.name +", ean: " + element.ean, + ', ilość: ' + element.quantity
+  }
+  return string
 
 }
 async function getLabels(labelNumbers) {
