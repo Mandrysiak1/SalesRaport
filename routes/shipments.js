@@ -463,7 +463,7 @@ function prepEmailContent(order_source){
   for(let i = 0; i < order_source.orders[0].products.length; i++)
   {
     let index = i + 1
-    string = string +"\n" +index + ". nazwa:  " + order_source.orders[0].products[i].name +", ean: " + order_source.orders[0].products[i].ean + ', ilość: ' + order_source.orders[0].products[i].quantity
+    string = string +"\n" +index + ". " + order_source.orders[0].products[i].name +", EAN: " + order_source.orders[0].products[i].ean + ', ILOŚĆ: ' + order_source.orders[0].products[i].quantity
   }
   return string
 
