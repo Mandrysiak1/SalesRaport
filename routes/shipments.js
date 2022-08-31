@@ -9,28 +9,34 @@ const fs = require('fs').promises;
 const { getOrderDetails, checkIfCod, getInsuranceValue, getOrderPackages } = require('./functions');
 const { rootCertificates } = require('tls');
 const { read, readSync } = require('fs');
+const { randomFillSync } = require('crypto');
 
-router.get('/email', async (req,res) => {
+router.post('/email', async (req, res) => {
 
-  let emailTopic = 'eo'
-  let emailContent = 'xd'
+  console.log("req:", req.body)
+  let emailTopic = req.body.email.topic
+  let emailContent = req.body.email.message
   let emailAdresses = []
-  let labelNumbers = [] //to co do remove
+  let labelNumbers = req.body.packages
 
-  labelNumbers.push({courierCode: "paczkomaty", package_number:'642244367266620124418898',package_id :'36190738'})
+  //labelNumbers.push({courierCode: "paczkomaty", package_number:'642244367266620124418898',package_id :'36190738'})
 
   let labels = await getLabels(labelNumbers)
-  console.log(labels)
-  
-  await sendEmail(emailTopic,emailContent,emailAdresses,labels)
+  console.log("egeafopigdasfopm ", labels)
 
-  res.json( {status:"SUCCESS"})
+  if (labels.toString() === 'ERROR') {
+    res.json({ status: "ERROR" })
+  } else {
+    await sendEmail(emailTopic, emailContent, emailAdresses, labels)
+
+    res.json({ status: "SUCCESS" })
+  }
 
 })
 
 router.post('/create', async (req, res) => {
- 
-  console.log("req",req.body.przesylka )
+
+  console.log("req", req.body.przesylka)
 
   let orderID = req.body.orderId
   let deliveryMethod = req.body.deliveryMethod
@@ -40,22 +46,21 @@ router.post('/create', async (req, res) => {
   // let contents = req.body.przesylka.find(el => el.name === 'contents').value
   // let refnumber = req.body.przesylka.find(el => el.name === 'refnumber').value
   let packageSize = '';
-  if((req.body.przesylka.data.find(el => el.name === 'size')) != undefined)
-  {
+  if ((req.body.przesylka.data.find(el => el.name === 'size')) != undefined) {
     packageSize = req.body.przesylka.data.find(el => el.name === 'size').value
   }
   let dimensions = req.body.przesylka.dimensions;
   // console.log("oid: " + order_id)
   // console.log("paczkomatSize " + req.body.przesylka[0].value)
-   console.log("devMethod " + deliveryMethod)
+  console.log("devMethod " + deliveryMethod)
   // console.log("cod " + cod)
   // console.log("insurance " + insurance)
 
   let resp = await addPackage(orderID, packageSize, dimensions, deliveryMethod, cod, insurance)
   let details = await getOrderPackages(orderID)
-  
 
-  let obj = {...resp,...details}
+
+  let obj = { ...resp, ...details }
   console.log('obj', obj)
 
   res.json(obj);
@@ -70,7 +75,7 @@ router.post('/remove', async (req, res) => {
   let package_number = req.body.package_number
   let courier_code = req.body.courier_code
 
- let response = await removePackage(courier_code, package_id, package_number)
+  let response = await removePackage(courier_code, package_id, package_number)
 
   console.log(courier_code, package_number, package_id)
 
@@ -127,7 +132,7 @@ async function createPackages(orderID, packageSize, dimensions, deliveryMethod, 
     return await sendInpostCourier(orderID, dimensions, cod, insurance)
   } else {
     console.log("ERROR: NO METHOD IN CREATE PACKAGE")
-    return {status:"ERROR", errorCode :"LOGIC ERROR" , errorMsg: "Nie znaleziono metody w CREATE PACKAGE"}
+    return { status: "ERROR", errorCode: "LOGIC ERROR", errorMsg: "Nie znaleziono metody w CREATE PACKAGE" }
   }
 
 }
@@ -159,10 +164,12 @@ async function sendAllegroInpost(orderID, packageSize, cod, insurance) {
 
   console.log(res.data)
 
-  return res.data.status === 'SUCCESS' ?  
-  {status:res.data.status,
-   package:{package_id : res.data.package_id, courier_code:"paczkomaty",package_number:res.data.package_number,courier_package_nr: res.data.courier_inner_number}} 
- :{status:res.data.status, errorCode : res.data.error_code,errorMsg: res.data.error_message}
+  return res.data.status === 'SUCCESS' ?
+    {
+      status: res.data.status,
+      package: { package_id: res.data.package_id, courier_code: "paczkomaty", package_number: res.data.package_number, courier_package_nr: res.data.courier_inner_number }
+    }
+    : { status: res.data.status, errorCode: res.data.error_code, errorMsg: res.data.error_message }
 
 }
 
@@ -194,10 +201,12 @@ async function sendInpostPaczkomat(orderID, packageSize, cod, insurance) {
 
   console.log(res.data)
 
-  return res.data.status === 'SUCCESS' ?  
-  {status:res.data.status,
-   package:{package_id : res.data.package_id, courier_code:"paczkomaty",package_number:res.data.package_number,courier_package_nr: res.data.courier_inner_number}} 
- :{status:res.data.status, errorCode : res.data.error_code,errorMsg: res.data.error_message}
+  return res.data.status === 'SUCCESS' ?
+    {
+      status: res.data.status,
+      package: { package_id: res.data.package_id, courier_code: "paczkomaty", package_number: res.data.package_number, courier_package_nr: res.data.courier_inner_number }
+    }
+    : { status: res.data.status, errorCode: res.data.error_code, errorMsg: res.data.error_message }
 }
 
 async function sendInpostCourier(orderID, dimensions, cod, insurance) {
@@ -243,14 +252,16 @@ async function sendInpostCourier(orderID, dimensions, cod, insurance) {
 
   console.log(res.data)
 
-  return res.data.status === 'SUCCESS' ?  
-  {status:res.data.status,
-   package:{package_id : res.data.package_id, courier_code:"inpostkurier",package_number:res.data.package_number,courier_package_nr: res.data.courier_inner_number}} 
- :{status:res.data.status, errorCode : res.data.error_code,errorMsg: res.data.error_message}
+  return res.data.status === 'SUCCESS' ?
+    {
+      status: res.data.status,
+      package: { package_id: res.data.package_id, courier_code: "inpostkurier", package_number: res.data.package_number, courier_package_nr: res.data.courier_inner_number }
+    }
+    : { status: res.data.status, errorCode: res.data.error_code, errorMsg: res.data.error_message }
 
 
 }
- 
+
 
 async function sendAllegroCourier(orderID, deliveryMethod, dimensions, cod, insurance) {
 
@@ -264,7 +275,7 @@ async function sendAllegroCourier(orderID, deliveryMethod, dimensions, cod, insu
 
   let fields = []
   let package_fields = []
-  
+
   fields.push(
     { id: "courier", value: id },
     { id: "package_type", value: "PACKAGE" },
@@ -296,12 +307,14 @@ async function sendAllegroCourier(orderID, deliveryMethod, dimensions, cod, insu
   var res = await axios
     .post('https://api.baselinker.com/connector.php', data, { headers: { "X-BLToken": process.env.BASELINKER_API_KEY, 'Content-Type': 'multipart/form-data' } })
 
-  console.log("allegro dpd: ",res.data)
+  console.log("allegro dpd: ", res.data)
 
-  return res.data.status === 'SUCCESS' ?  
-  {status:res.data.status,
-   package:{package_id : res.data.package_id, courier_code:"allegrokurier",package_number:res.data.package_number,courier_package_nr: res.data.courier_inner_number}} 
- :{status:res.data.status, errorCode : res.data.error_code,errorMsg: res.data.error_message}
+  return res.data.status === 'SUCCESS' ?
+    {
+      status: res.data.status,
+      package: { package_id: res.data.package_id, courier_code: "allegrokurier", package_number: res.data.package_number, courier_package_nr: res.data.courier_inner_number }
+    }
+    : { status: res.data.status, errorCode: res.data.error_code, errorMsg: res.data.error_message }
 }
 
 async function getAllegroID(deliveryMethod) {
@@ -352,8 +365,8 @@ async function removePackage(courier_code, package_id, package_number) {
     })
 
 
-    return res.data.status === 'SUCCESS' ? {status:res.data.status} : {status:res.data.status, errorCode : res.data.error_code,errorMsg: res.data.error_message}
-  }
+  return res.data.status === 'SUCCESS' ? { status: res.data.status } : { status: res.data.status, errorCode: res.data.error_code, errorMsg: res.data.error_message }
+}
 async function markOrderWithStar(orderID) {
 
   let params = {
@@ -390,10 +403,10 @@ async function unmarkOrderWithStar(orderID) {
 
 }
 
-async function sendEmail(emailTopic,emailContent,emailAdresses,labels) {
+async function sendEmail(emailTopic, emailContent, emailAdresses, labels) {
 
   let attachments = []
-  
+
 
   labels.forEach(element => {
     let x = new Object();
@@ -407,8 +420,8 @@ async function sendEmail(emailTopic,emailContent,emailAdresses,labels) {
   var mail = nodemailer.createTransport({
     service: 'gmail',
     auth: {
-      user: 'family24raports@gmail.com',
-      pass: process.env.EMAIL_PASSWORD
+      user: 'kontaktkubartech@gmail.com',
+      pass: 'xgkydtemmbbnnotd'
     }
   });
 
@@ -416,9 +429,9 @@ async function sendEmail(emailTopic,emailContent,emailAdresses,labels) {
   var maillist = emailAdresses
 
   var mailOptions = {
-    from: 'givemesomething9@gmail.com',
+    from: 'kontaktkubartech@gmail.com',
     to: maillist,
-    subject:emailTopic,
+    subject: emailTopic,
     text: emailContent,
     attachments: attachments
   };
@@ -434,35 +447,40 @@ async function sendEmail(emailTopic,emailContent,emailAdresses,labels) {
   return "success"
 
 }
-async function getLabels(labelNumbers){
+async function getLabels(labelNumbers) {
 
   let resposes = []
 
-  for(let element of labelNumbers){
-    let courierCode = element.courierCode
+  for (let element of labelNumbers) {
+    let courierCode = element.courier_code
     let package_id = element.package_id
     let package_number = element.package_number
 
-    let res = await getLabel(courierCode,package_id,package_number)
+    let res = await getLabel(courierCode, package_id, package_number)
+    if (res === 'ERROR') {
+      return 'ERROR'
+    }
     resposes.push(res)
   }
 
   console.log(resposes)
 
-  if(resposes.some(e => e === 'fail')){
+  if (resposes.some(e => e === 'fail')) {
     return 'fail'
-  }else {
+  } else {
     return resposes
   }
 
 }
-async function getLabel(courierCode,package_id,package_number){
+async function getLabel(courierCode, package_id, package_number) {
 
   let params = {
     "courier_code": courierCode,
     "package_id": package_id,
-    "package_number" : package_number
+    "package_number": package_number
   };
+
+  console.log("stats", courierCode, package_id, package_number)
 
   let data = {
     'method': 'getLabel',
@@ -473,24 +491,26 @@ async function getLabel(courierCode,package_id,package_number){
       headers: { "X-BLToken": process.env.BASELINKER_API_KEY, 'Content-Type': 'multipart/form-data' }
     })
 
-    console.log(res)
-    
-    return await saveBase64toPdf(res.data.label,package_id)
-  
+  if (res.data.status === 'ERROR')
+    return "ERROR"
+  console.log("base23: ", res.data)
+
+  return await saveBase64toPdf(res.data.label, package_id)
+
 }
 
-async function saveBase64toPdf(base64code,filename){
+async function saveBase64toPdf(base64code, filename) {
 
   let finalFilename = "Label" + filename + ".pdf"
-  console.log("err",finalFilename)
+  // console.log("err",finalFilename)
 
-  await fs.writeFile(finalFilename, base64code, 'base64', error =>  {
+  await fs.writeFile(finalFilename, base64code, 'base64', error => {
 
     if (error) {
-        return "fail"
+      return "fail"
 
     } else {
-        return finalFilename
+      return finalFilename
     }
   });
 

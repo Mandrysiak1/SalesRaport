@@ -173,14 +173,26 @@ function removePackageFromList(courier_package_nr) {
     }
 }
 
-function sendEmail() {
+async function sendEmail() {
+
     let messageTextarea = document.getElementById('email-message');
     let topicInput = document.getElementById('email-topic');
     state.email = {
         message: messageTextarea.value,
         topic: topicInput.value
     }
-    console.log(state);
+    //console.log(state);
+
+    const response = await fetch('/shipments/email', {
+        method: 'POST',
+        body: JSON.stringify(state),
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    });
+    
+    let myJson = await response.json();
+    console.log("myJsonXD",myJson)
 }
 function getShopeeFieldValues(){
    //TODO: state.przesylka = {packageId : ???}
