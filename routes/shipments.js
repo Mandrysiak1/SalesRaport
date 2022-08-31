@@ -23,7 +23,7 @@ router.post('/email', async (req, res) => {
   let orderId = req.body.orderId
   let moveToCategory = req.body.email.moveToCategory
   let order_source = await getOrderDetails(orderId)
-  emailcontent = emailContent + prepEmailContent(order_source)
+  emailContent = emailContent + prepEmailContent(order_source)
   //labelNumbers.push({courierCode: "paczkomaty", package_number:'642244367266620124418898',package_id :'36190738'})
 
   let labels = await getLabels(labelNumbers)
