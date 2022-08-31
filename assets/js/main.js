@@ -1,8 +1,6 @@
 var state = {
     packages: [],
-    email : {
-
-    },
+    email : {},
     // message: "",
     // topic: "",
     przesylka: {},
@@ -178,22 +176,33 @@ async function sendEmail() {
     preloader.style.display = "inline-block";
     let messageTextarea = document.getElementById('email-message');
     let topicInput = document.getElementById('email-topic');
+    let moveToCategoryCheck = document.getElementById('email-move');
+    let receiversInput = document.getElementById('email-receivers');
+    let receivers = receiversInput.value.replaceAll(' ', '').split(',');
+
     state.email = {
         message: messageTextarea.value,
-        topic: topicInput.value
+        topic: topicInput.value,
+        moveToCategory: moveToCategoryCheck.checked,
+        receivers: receivers
     }
     //console.log(state);
 
-    const response = await fetch('/shipments/email', {
-        method: 'POST',
-        body: JSON.stringify(state),
-        headers: {
-            'Content-Type': 'application/json'
-        }
-    });
+    // const response = await fetch('/shipments/email', {
+    //     method: 'POST',
+    //     body: JSON.stringify(state),
+    //     headers: {
+    //         'Content-Type': 'application/json'
+    //     }
+    // });
     
-    let myJson = await response.json();
+    // let myJson = await response.json();
+
+    let myJson = {
+        status: 'fail'
+    };
     console.log("myJsonXD",myJson)
+    console.log('state', state.email);
 
     myJson = myJson.status.toLowerCase();
 

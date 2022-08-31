@@ -209,7 +209,15 @@
                         <label for="email-message">Wiadomość</label>
                         <textarea class="form-control" placeholder="Wiadomość" id="email-message" style="height: 100px" value="Treść"></textarea>  
                     </div>
-
+                    <div class="message__input">
+                        <label for="email-topic">Odbiorcy</label>
+                        <input type="text" class="form-control" id="email-receivers" value="gkrzypkowski@kubartech.pl, marcink1974@o2.pl, aneta.krzypkowska@op.pl" aria-describedby="emailReceiversHelp">   
+                        <small id="emailReceiversHelp" class="form-text text-muted">Aby dodać kolejnego odbiorcę, dopisz kolejny adres e-mail po przecinku.</small>             
+                    </div>
+                    <div class="message__input form-check">
+                        <input type="checkbox" class="form-check-input" id="email-move">
+                        <label class="form-check-label" for="email-move">Przenieś do wysłania.</label>
+                    </div>
                     <div class="subsection" id="labels">
                         <h3 class="subsection__header">Etykiety</h3>
                         <div class="subsection__container">
