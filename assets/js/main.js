@@ -188,21 +188,18 @@ async function sendEmail() {
     }
     //console.log(state);
 
-    // const response = await fetch('/shipments/email', {
-    //     method: 'POST',
-    //     body: JSON.stringify(state),
-    //     headers: {
-    //         'Content-Type': 'application/json'
-    //     }
-    // });
+    const response = await fetch('/shipments/email', {
+        method: 'POST',
+        body: JSON.stringify(state),
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    });
     
-    // let myJson = await response.json();
+    let myJson = await response.json();
 
-    let myJson = {
-        status: 'fail'
-    };
     console.log("myJsonXD",myJson)
-    console.log('state', state.email);
+    console.log('state', state);
 
     myJson = myJson.status.toLowerCase();
 

@@ -16,8 +16,11 @@ router.post('/email', async (req, res) => {
   console.log("req:", req.body)
   let emailTopic = req.body.email.topic
   let emailContent = req.body.email.message
-  let emailAdresses = []
+  let emailAdresses = req.body.email.receivers
+ //let emailAdresses = []
   let labelNumbers = req.body.packages
+  let orderId = req.body.orderId
+  let moveToCategory = req.body.email.moveToCategory
 
   //labelNumbers.push({courierCode: "paczkomaty", package_number:'642244367266620124418898',package_id :'36190738'})
 
@@ -27,8 +30,13 @@ router.post('/email', async (req, res) => {
   if (labels.toString() === 'ERROR') {
     res.json({ status: "ERROR" })
   } else {
-    await sendEmail(emailTopic, emailContent, emailAdresses, labels)
 
+    await sendEmail(emailTopic, emailContent, emailAdresses, labels)
+    if(moveToCategory){
+        let order_source = await getOrderDetails(orderId)
+       
+        await moveOrderToProperCategory(orderId,order_source.orderSource)
+      }
     res.json({ status: "SUCCESS" })
   }
 

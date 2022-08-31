@@ -1,6 +1,3 @@
-// import websockets from './websockets';
-
-
 const express = require('express')
 const app = express()
 const cron = require('node-cron');
@@ -32,28 +29,28 @@ app.get('/raport', (req, res) => {
 
 
 
-// cron.schedule('00 59 * * * *', function() {
-//     console.log('running addTASK ');
+cron.schedule('00 59 * * * *', function() {
+    console.log('running addTASK ');
   
-//     request(app)
-//   .get('/orders/add')
-//   .expect(200)
-//   .end(function(err, res) {
-//     if (err) throw err;
-//     console.log('call done');
-//   });
-//   });
+    request(app)
+  .get('/orders/add')
+  .expect(200)
+  .end(function(err, res) {
+    if (err) throw err;
+    console.log('call done');
+  });
+  });
 
-//   cron.schedule('00 18 * * 0', function() {
-//     console.log('Running getTask');
-//     request(app)
-//   .post('/orders/get')
-//   .expect(200)
-//   .end(function(err, res) {
-//     if (err) throw err;
-//     console.log('call done');
-//   });
-//   });
+  cron.schedule('00 18 * * 0', function() {
+    console.log('Running getTask');
+    request(app)
+  .post('/orders/get')
+  .expect(200)
+  .end(function(err, res) {
+    if (err) throw err;
+    console.log('call done');
+  });
+  });
 
 const ordersRouter = require("./routes/orders")
 const shimpents = require("./routes/shipments")
@@ -63,6 +60,9 @@ const shimpentsRender = require("./routes/shipmentsRender")
 app.use("/orders", ordersRouter)
 app.use("/shipments",shimpents)
 app.use("/render",shimpentsRender)
+
+module.exports.app = app
+
 const Port = process.env.PORT  || 8080
 
 const server = app.listen(Port,() => console.log(`Server start on port: ${Port}`))
