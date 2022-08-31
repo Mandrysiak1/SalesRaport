@@ -174,7 +174,8 @@ function removePackageFromList(courier_package_nr) {
 }
 
 async function sendEmail() {
-
+    let preloader = document.getElementById('email-preloader');
+    preloader.style.display = "inline-block";
     let messageTextarea = document.getElementById('email-message');
     let topicInput = document.getElementById('email-topic');
     state.email = {
@@ -193,6 +194,17 @@ async function sendEmail() {
     
     let myJson = await response.json();
     console.log("myJsonXD",myJson)
+
+    myJson = myJson.status.toLowerCase();
+
+    if(myJson === 'success') {
+        let message = 'Pomyślnie wysłano e-mail.';
+        alert(AlertType.Success, message);
+    } else {
+        let message = 'Nie udało się wysłać wiadomości';
+        alert(AlertType.Fail, message);
+    }
+    preloader.style.display = "none";
 }
 function getShopeeFieldValues(){
    //TODO: state.przesylka = {packageId : ???}
@@ -283,44 +295,6 @@ async function createPackage()
         console.log('nowe', orderPackages);
 
 
-        /*
-        let tbl = document.querySelector('#packages .table');
-        let row = tbl.insertRow();
-        row.setAttribute('id', '<%=package.package_id%>');
-        row.insertCell().appendChild(document.createTextNode('data'));
-        row.insertCell().appendChild(document.createTextNode(package.courier_code));
-        let a = document.createElement('a');
-        let linkText = document.createTextNode(package.courier_package_nr);
-        a.appendChild(linkText);
-        a.title = package.courier_package_nr;
-        a.href = package.tracking_url;
-        row.insertCell().appendChild(a);
-        row.insertCell().appendChild(document.createTextNode(package.status));
-    
-        let package = {};
-        let deleteButton = document.createElement('button');
-        deleteButton.classList.add('btn', 'btn-danger', 'btn-sm', 'me-1');
-        deleteButton.setAttribute('type', 'button');
-        deleteButton.addEventListener('click', function() {
-            // deletePackage(package.package_id);
-            console.log("deletePackage");
-        });
-        deleteButton.innerHTML = '<i class="bi bi-trash-fill"></i>';
-
-        let addButton = document.createElement('button');
-        addButton.classList.add('btn', 'btn-success', 'btn-sm');
-        addButton.setAttribute('type', 'button');
-        addButton.addEventListener('click', function() {
-            // addPackageToList(package.package_id);
-            console.log("addPackage");
-        });
-        addButton.innerHTML = '<i class="bi bi-plus"></i>';
-
-        let buttonCell = row.insertCell();
-        buttonCell.appendChild(deleteButton);
-        buttonCell.appendChild(addButton);
-        */
-
         let tbdy = document.querySelector('#packages tbody');
         tbdy.innerHTML = '';
 
@@ -363,7 +337,7 @@ async function createPackage()
             buttonCell.appendChild(addButton);
         }
 
-        preloader.style.display = "none";
+        
         alert(AlertType.Success, message);
     }
     else if(responseStatus === "fail"){
@@ -374,7 +348,7 @@ async function createPackage()
         alert(AlertType.Fail, message);
     }
     
-
+    preloader.style.display = "none";
 }
 
 window.onload = async function() {
