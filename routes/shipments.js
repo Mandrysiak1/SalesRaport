@@ -460,7 +460,7 @@ async function sendEmail(emailTopic, emailContent, emailAdresses, labels) {
 function prepEmailContent(order_source){
   let string = '\n\n\nLISTA WYSYŁKOWA\n'
 
-  for(let i = 0; i < response.data.orders[0].products.length; i++)
+  for(let i = 0; i < order_source.orders[0].products.length; i++)
   {
     string = string +"\n" +i+1 + ". nazwa:  " + order_source.orders[0].products[i].name +", ean: " + order_source.orders[0].products[i].ean + ', ilość: ' + order_source.orders[0].products[i].quantity
   }
