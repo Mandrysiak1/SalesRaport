@@ -33,9 +33,10 @@ router.post('/email', async (req, res) => {
 
     await sendEmail(emailTopic, emailContent, emailAdresses, labels)
     if(moveToCategory){
+
         let order_source = await getOrderDetails(orderId)
-       
-        await moveOrderToProperCategory(orderId,order_source.orderSource)
+       console.log("os:",order_source.orders[0].order_source)
+        await moveOrderToProperCategory(orderId,order_source.orders[0].order_source)
       }
     res.json({ status: "SUCCESS" })
   }
