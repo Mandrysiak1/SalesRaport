@@ -96,7 +96,6 @@ async function getOrderDetails(orderID) {
   function getRawInsuranceValue(orderDetails) {
     let insuranceValue = 0
   
-    if(orderDetails.orders.length == 0) return 0;
     for (let i = 0; i < orderDetails.orders[0].products.length; i++) {
       var quantity = orderDetails.orders[0].products[i].quantity
       var price = orderDetails.orders[0].products[i].price_brutto
