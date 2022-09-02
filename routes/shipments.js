@@ -119,6 +119,7 @@ async function addPackage(orderID, packageSize, dimensions, deliveryMethod, cod,
 
 async function createPackages(orderID, packageSize, dimensions, deliveryMethod, cod, insurance) {
 
+
   if (deliveryMethod === 'Allegro DPD') {
     return await sendAllegroCourier(orderID, deliveryMethod, dimensions, cod, insurance)
   } else if (deliveryMethod === 'Allegro UPS') {
@@ -141,7 +142,7 @@ async function createPackages(orderID, packageSize, dimensions, deliveryMethod, 
     return await sendInpostCourier(orderID, dimensions, cod, insurance)
   } else {
     console.log("ERROR: NO METHOD IN CREATE PACKAGE")
-    return { status: "ERROR", errorCode: "LOGIC ERROR", errorMsg: "Nie znaleziono metody w CREATE PACKAGE" }
+    return { status: "ERROR", errorCode: "ERROR", errorMsg: "Nie znaleziono metody w CREATE PACKAGE" }
   }
 
 }
