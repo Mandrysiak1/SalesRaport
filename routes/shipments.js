@@ -119,8 +119,6 @@ async function addPackage(orderID, packageSize, dimensions, deliveryMethod, cod,
 
 async function createPackages(orderID, packageSize, dimensions, deliveryMethod, cod, insurance) {
 
-  console.log
-
   if (deliveryMethod === 'Allegro DPD') {
     return await sendAllegroCourier(orderID, deliveryMethod, dimensions, cod, insurance)
   } else if (deliveryMethod === 'Allegro UPS') {
