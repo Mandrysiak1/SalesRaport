@@ -119,6 +119,7 @@ async function addPackage(orderID, packageSize, dimensions, deliveryMethod, cod,
 
 async function createPackages(orderID, packageSize, dimensions, deliveryMethod, cod, insurance) {
 
+  console.log
 
   if (deliveryMethod === 'Allegro DPD') {
     return await sendAllegroCourier(orderID, deliveryMethod, dimensions, cod, insurance)
@@ -134,9 +135,9 @@ async function createPackages(orderID, packageSize, dimensions, deliveryMethod, 
     return await sendInpostPaczkomat(orderID, packageSize, cod, insurance)
   } else if (deliveryMethod === 'Allegro Paczkomaty 24/7 InPost') {
     return await sendAllegroInpost(orderID, packageSize, cod, insurance)
-  } else if (deliveryMethod === 'Allegro miniKurier24 Inpost') {
+  } else if (deliveryMethod === 'Allegro miniKurier24 InPost') {
     return await sendAllegroInpost(orderID, packageSize, cod, insurance)
-  } else if (deliveryMethod === 'Allegro Kurier24 Inpost') {
+  } else if (deliveryMethod === 'Allegro Kurier24 InPost') {
     return await sendAllegroInpost(orderID, packageSize, cod, insurance)
   } else if (deliveryMethod === 'Przesyłka kurierska standardowa') {
     return await sendInpostCourier(orderID, dimensions, cod, insurance)
