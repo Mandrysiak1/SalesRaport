@@ -113,10 +113,11 @@ router.post('/get', async (req, res) => {
         if (res.data.products[element_res.product_id]) {
 
           allProducts.push(element_res)
+                                             
+          if (element_res.total > res.data.products[element_res.product_id].stock.bl_5662
+             && !selectedProducts.some(item => (item.product_id.toString() === element_res.product_id.toString())) ) {
 
-          if (element_res.total > res.data.products[element_res.product_id].stock.bl_5662 && (selectedProducts.some(e => (e.product_id === element_res.product_id).length == 0))) {
-
-            selectedProducts.push(element_res)
+              selectedProducts.push(element_res)
 
           }
         }
