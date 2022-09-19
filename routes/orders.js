@@ -173,48 +173,52 @@ router.post('/get', async (req, res) => {
           let isActive = res.data.products[element.product_id].text_fields.extra_field_4588
           let isBundle = res.data.products[element.product_id].text_fields.extra_field_4690
 
-          if (isActive.toLowerCase() === "tak" && isBundle.toLowerCase() === "nie") {
-            let product_name = res.data.products[element.product_id].text_fields.name
-            let sku = res.data.products[element.product_id].sku
-            let ean = res.data.products[element.product_id].ean
-            let temp_timestamp = element.timestamp
-
-            temp_timestamp = temp_timestamp === null ? 0 : temp_timestamp;
-
-            let timestamp = 0
-            if (temp_timestamp != 0) {
-              let a = new Date(temp_timestamp * 1000)
-
-              var month = ((a.getUTCMonth() + 1) < 10 ? '0' : '') + (a.getUTCMonth() + 1); //months from 1-12
-              var day = ((a.getUTCDate()) < 10 ? '0' : '') + a.getUTCDate()
-
-              var year = a.getUTCFullYear();
-              timestamp = day + "." + month + "." + year;
-            } else {
-              timestamp = "przed 08.05.2022"
-            }
-
-            let sold = 0
-
-            sql_result.forEach(el => {
-
-              if (el.product_id == element.product_id) {
-                sold = el.total
+          if(isBundle != null && isActive !=null)
+          {
+            if (isActive.toLowerCase() === "tak" && isBundle.toLowerCase() === "nie") {
+              let product_name = res.data.products[element.product_id].text_fields.name
+              let sku = res.data.products[element.product_id].sku
+              let ean = res.data.products[element.product_id].ean
+              let temp_timestamp = element.timestamp
+  
+              temp_timestamp = temp_timestamp === null ? 0 : temp_timestamp;
+  
+              let timestamp = 0
+              if (temp_timestamp != 0) {
+                let a = new Date(temp_timestamp * 1000)
+  
+                var month = ((a.getUTCMonth() + 1) < 10 ? '0' : '') + (a.getUTCMonth() + 1); //months from 1-12
+                var day = ((a.getUTCDate()) < 10 ? '0' : '') + a.getUTCDate()
+  
+                var year = a.getUTCFullYear();
+                timestamp = day + "." + month + "." + year;
+              } else {
+                timestamp = "przed 08.05.2022"
               }
-            })
-
-            let in_stock = res.data.products[element.product_id].stock.bl_5662
-            let price = res.data.products[element.product_id].prices[4494]
-            let buy_price = (Number.parseFloat(res.data.products[element.product_id].text_fields.extra_field_5072)).toFixed(2)
-            let margin = ((price - buy_price * 1.23) / price * 100).toFixed(2);
-            let vendor = res.data.products[element.product_id].text_fields.extra_field_4240
-
-            let arr = []
-            arr = [product_name, sku + "\n" + ean, sold, in_stock, price, buy_price, margin, vendor, timestamp]
-            dataArrSelected.push(arr)
-          } else {
-            // console.log(product_name = res.data.products[element.product_id].text_fields.name + " isActive: " + isActive)
+  
+              let sold = 0
+  
+              sql_result.forEach(el => {
+  
+                if (el.product_id == element.product_id) {
+                  sold = el.total
+                }
+              })
+  
+              let in_stock = res.data.products[element.product_id].stock.bl_5662
+              let price = res.data.products[element.product_id].prices[4494]
+              let buy_price = (Number.parseFloat(res.data.products[element.product_id].text_fields.extra_field_5072)).toFixed(2)
+              let margin = ((price - buy_price * 1.23) / price * 100).toFixed(2);
+              let vendor = res.data.products[element.product_id].text_fields.extra_field_4240
+  
+              let arr = []
+              arr = [product_name, sku + "\n" + ean, sold, in_stock, price, buy_price, margin, vendor, timestamp]
+              dataArrSelected.push(arr)
+            } else {
+              // console.log(product_name = res.data.products[element.product_id].text_fields.name + " isActive: " + isActive)
+            }
           }
+        
 
         }
       })
