@@ -86,14 +86,14 @@ async function deletePackage(packageId) {
     
     let myJson = await response.json();
     myJson = myJson.status.toLowerCase();
-    console.log('myjson', myJson);
+    
 
     // //myJson = "success"
     // //myJson = "fail"
 
     // const myJson="success";
     let data = {};
-
+    console.log('myjson_???',myJson);
     if(myJson === "success"){
         let row = document.getElementById(package.package_id);
         row.parentNode.removeChild(row);
@@ -101,7 +101,7 @@ async function deletePackage(packageId) {
         let message = 'Pomyślnie usunięto przesyłkę o numerze ' + package.package_id + '.';
         alert(AlertType.Success, message);
         
-    }else if(myJson === "fail"){
+    }else if(myJson === "fail" || myJson === "error"){
         let message = 'Nie udało się usunąć przesyłki o numerze ' + package.package_id + '.';
         alert(AlertType.Fail, message);
         console.log("niedziała")
@@ -198,7 +198,7 @@ async function sendEmail() {
     
     let myJson = await response.json();
 
-    console.log("myJsonXD",myJson)
+    console.log("myJsonXD wot",myJson)
     console.log('state', state);
 
     myJson = myJson.status.toLowerCase();
@@ -277,19 +277,21 @@ async function createPackage()
     
     const myJson = await response.json();
     const responseStatus = myJson.status.toLowerCase();
+    const error_status = myJson.errorCode;
     const package = myJson.package;
     const packages = myJson.packages;
 
     console.log(myJson);
 
     // const responseStatus = 'success';
-    // console.log("myJson: ", responseStatus)
+     console.log("myError: ", error_status)
+
 
     
 
     let message = '';
 
-    if(responseStatus === "success"){
+    if(responseStatus === "success" && error_status == null){
         // let row = document.getElementById(package.package_id);
         // row.parentNode.removeChild(row);
 
@@ -345,6 +347,13 @@ async function createPackage()
 
         
         alert(AlertType.Success, message);
+    }else if(responseStatus === "success" && error_status != null){
+
+        message = 'Nie udało się utworzyć przesyłki. ';
+        message += myJson.errorMsg;
+ 
+         console.log("niedziała")
+         alert(AlertType.Fail, message);
     }
     else if(responseStatus === "fail"){
        message = 'Nie udało się utworzyć przesyłki. ';

@@ -94,6 +94,7 @@ async function getOrderDetails(orderID) {
   
   }
   function getRawInsuranceValue(orderDetails) {
+   
     let insuranceValue = 0
   
     for (let i = 0; i < orderDetails.orders[0].products.length; i++) {
@@ -109,6 +110,8 @@ async function getOrderDetails(orderID) {
 
   function getDefaultShipmentMethod(orderDetails)
   {
+    console.log("ODER OSURCE: "  +  orderDetails.orders[0].order_source)
+
     if (orderDetails.orders[0].order_source === 'empik') {
 
       if (orderDetails.orders[0].delivery_method === 'KURIER' || orderDetails.orders[0].delivery_method === 'Kurier - płatność za pobraniem' ) {
@@ -171,7 +174,19 @@ async function getOrderDetails(orderID) {
       }else{
         return {tab:'idk',value: 'idk_from_allegro'}
       }
-    }else{
+    }else if(orderDetails.orders[0].order_source === 'shop'){
+
+      if (orderDetails.orders[0].delivery_method === 'Przesyłka kurierska InPost Kurier Standard') {
+        return {tab:'inpost',value:'Przesyłka kurierska standardowa'}
+      }else if (orderDetails.orders[0].delivery_method === 'Przesyłka kurierska InPost Kurier Standard') {
+        return {tab:'inpost',value:'Przesyłka kurierska standardowa'}
+      }else if(orderDetails.orders[0].delivery_method === 'Przesyłka kurierska InPost Kurier Standard-Płatność za pobraniem'){
+        return {tab:'paczkomaty',value:'Paczkomaty 24/7 - Przesyłka standardowa'}
+      }else{
+        return {tab:'idk',value: 'idk_from_shop'}
+      }
+    }
+    else{
       return {tab:'idk',value: 'idk'}
     }
 

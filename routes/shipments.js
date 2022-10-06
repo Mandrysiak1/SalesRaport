@@ -27,25 +27,25 @@ router.post('/email', async (req, res) => {
   //labelNumbers.push({courierCode: "paczkomaty", package_number:'642244367266620124418898',package_id :'36190738'})
 
   let labels = await getLabels(labelNumbers)
-  console.log("egeafopigdasfopm ", labels)
 
   if (labels.toString() === 'ERROR') {
     res.json({ status: "ERROR" })
   } else {
 
-    await sendEmail(emailTopic, emailContent, emailAdresses, labels)
+    var response  = await sendEmail(emailTopic, emailContent, emailAdresses, labels)
     if(moveToCategory){
 
         await moveOrderToProperCategory(orderId,order_source.orders[0].order_source)
       }
-    res.json({ status: "SUCCESS" })
+      console.log("xd",response)
+    res.json(response)
   }
 
 })
 
 router.post('/create', async (req, res) => {
 
-  console.log("req", req.body.przesylka)
+  console.log("req: ", req.body.przesylka)
 
   let orderID = req.body.orderId
   let deliveryMethod = req.body.deliveryMethod
@@ -59,18 +59,17 @@ router.post('/create', async (req, res) => {
     packageSize = req.body.przesylka.data.find(el => el.name === 'size').value
   }
   let dimensions = req.body.przesylka.dimensions;
-  // console.log("oid: " + order_id)
-  // console.log("paczkomatSize " + req.body.przesylka[0].value)
-  console.log("devMethod " + deliveryMethod)
-  // console.log("cod " + cod)
-  // console.log("insurance " + insurance)
+
+  console.log("deliveryMethod: " + deliveryMethod)
+
 
   let resp = await addPackage(orderID, packageSize, dimensions, deliveryMethod, cod, insurance)
+  //let resp = await addPackage("xd", packageSize, dimensions, deliveryMethod, cod, insurance)
   let details = await getOrderPackages(orderID)
 
 
   let obj = { ...resp, ...details }
-  console.log('obj', obj)
+  console.log('responseStatus', obj)
 
   res.json(obj);
 
@@ -86,7 +85,7 @@ router.post('/remove', async (req, res) => {
 
   let response = await removePackage(courier_code, package_id, package_number)
 
-  console.log(courier_code, package_number, package_id)
+ 
 
   res.json(response);
 
@@ -105,13 +104,11 @@ async function addPackage(orderID, packageSize, dimensions, deliveryMethod, cod,
 
     return res
   } catch (exception) {
-    console.log(exception)
+    console.log("addPackager Ex: " + exception)
     return "fail"
   } finally {
     await unmarkOrderWithStar(orderID)
   }
-
-
 
 }
 
@@ -171,7 +168,7 @@ async function sendAllegroInpost(orderID, packageSize, cod, insurance) {
   var res = await axios
     .post('https://api.baselinker.com/connector.php', data, { headers: { "X-BLToken": process.env.BASELINKER_API_KEY, 'Content-Type': 'multipart/form-data' } })
 
-  console.log(res.data)
+  console.log("Create Package res: " + res.data)
 
   return res.data.status === 'SUCCESS' ?
     {
@@ -208,7 +205,7 @@ async function sendInpostPaczkomat(orderID, packageSize, cod, insurance) {
   var res = await axios
     .post('https://api.baselinker.com/connector.php', data, { headers: { "X-BLToken": process.env.BASELINKER_API_KEY, 'Content-Type': 'multipart/form-data' } })
 
-  console.log(res.data)
+    console.log("Create Package res: " + res.data)
 
   return res.data.status === 'SUCCESS' ?
     {
@@ -259,7 +256,7 @@ async function sendInpostCourier(orderID, dimensions, cod, insurance) {
   var res = await axios
     .post('https://api.baselinker.com/connector.php', data, { headers: { "X-BLToken": process.env.BASELINKER_API_KEY, 'Content-Type': 'multipart/form-data' } })
 
-  console.log(res.data)
+    console.log("Create Package res: " + res.data)
 
   return res.data.status === 'SUCCESS' ?
     {
@@ -316,7 +313,7 @@ async function sendAllegroCourier(orderID, deliveryMethod, dimensions, cod, insu
   var res = await axios
     .post('https://api.baselinker.com/connector.php', data, { headers: { "X-BLToken": process.env.BASELINKER_API_KEY, 'Content-Type': 'multipart/form-data' } })
 
-  console.log("allegro dpd: ", res.data)
+    console.log("Create Package res: " + res.data)
 
   return res.data.status === 'SUCCESS' ?
     {
@@ -354,7 +351,7 @@ async function getAllegroID(deliveryMethod) {
 }
 async function removePackage(courier_code, package_id, package_number) {
 
-  console.log(courier_code, package_number, package_id)
+  console.log("Remove package data: " + courier_code, package_number, package_id)
 
 
   let params = {
@@ -437,23 +434,28 @@ async function sendEmail(emailTopic, emailContent, emailAdresses, labels) {
   emailAdresses.push('andrysiakmaciejj@gmail.com')
   var maillist = emailAdresses
 
-  var mailOptions = {
-    from: 'kontaktkubartech@gmail.com',
-    to: maillist,
-    subject: emailTopic,
-    text: emailContent,
-    attachments: attachments
-  };
+ 
+  try{
+    var mailOptions = {
+      from: 'kontaktkubartech@gmail.com',
+      to: maillist,
+      subject: emailTopic,
+      text: emailContent,
+      attachments: attachments
+    };
+  
+      var x = await mail.sendMail(mailOptions);
+ 
+      return {status: "success"}
 
-  mail.sendMail(mailOptions, function (error, info) {
-    if (error) {
-      console.log(error);
-    } else {
-      console.log('Email sent: ' + info.response);
-    }
-  });
+  }catch(error)
+  {
+    return {status: "error"}
+  }
 
-  return "success"
+  
+
+
 
 }
 
@@ -484,7 +486,6 @@ async function getLabels(labelNumbers) {
     resposes.push(res)
   }
 
-  console.log(resposes)
 
   if (resposes.some(e => e === 'fail')) {
     return 'fail'
@@ -514,7 +515,6 @@ async function getLabel(courierCode, package_id, package_number) {
 
   if (res.data.status === 'ERROR')
     return "ERROR"
-  console.log("base23: ", res.data)
 
   return await saveBase64toPdf(res.data.label, package_id)
 
@@ -523,7 +523,6 @@ async function getLabel(courierCode, package_id, package_number) {
 async function saveBase64toPdf(base64code, filename) {
 
   let finalFilename = "Label" + filename + ".pdf"
-  // console.log("err",finalFilename)
 
   await fs.writeFile(finalFilename, base64code, 'base64', error => {
 
@@ -541,9 +540,7 @@ async function saveBase64toPdf(base64code, filename) {
 
 async function moveOrderToProperCategory(orderID, orderSource) {
 
-  console.log("orderSource from moveorder: " + orderSource)
   let statusID = getCategoryStatus(orderSource)
-  console.log("statusID from moveorder: " + statusID)
 
   let params = {
     "order_id": orderID,
@@ -559,8 +556,6 @@ async function moveOrderToProperCategory(orderID, orderSource) {
       headers: { "X-BLToken": process.env.BASELINKER_API_KEY, 'Content-Type': 'multipart/form-data' }
     })
 
-
-  console.log("status changes: " + info.status)
 }
 
 function getCategoryStatus(orderSource) {
