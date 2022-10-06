@@ -178,9 +178,9 @@ async function getOrderDetails(orderID) {
 
       if (orderDetails.orders[0].delivery_method === 'Przesyłka kurierska InPost Kurier Standard') {
         return {tab:'inpost',value:'Przesyłka kurierska standardowa'}
-      }else if (orderDetails.orders[0].delivery_method === 'Przesyłka kurierska InPost Kurier Standard') {
+      }else if (orderDetails.orders[0].delivery_method === 'Przesyłka kurierska InPost Kurier Standard-Płatność za pobraniem') {
         return {tab:'inpost',value:'Przesyłka kurierska standardowa'}
-      }else if(orderDetails.orders[0].delivery_method === 'Przesyłka kurierska InPost Kurier Standard-Płatność za pobraniem'){
+      }else if(orderDetails.orders[0].delivery_method === 'Przesyłka paczkomatowa - standardowa'){
         return {tab:'paczkomaty',value:'Paczkomaty 24/7 - Przesyłka standardowa'}
       }else{
         return {tab:'idk',value: 'idk_from_shop'}
