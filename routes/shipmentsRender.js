@@ -77,7 +77,7 @@ try {
 } catch (error) {
   
   return res.status(400).send({
-    message: error.message + "     ->Sprawdź czy zamówienie jest potwierdzone w systemie baselinker, czy zawiera produkty i czy jest opłacone lub ma zaznaczone pole za pobraniem."
+    message: error.message + "     ->Sprawdź czy zamówienie jest potwierdzone w systemie baselinker"
  });
 }
 
