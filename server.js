@@ -16,8 +16,6 @@ app.use(express.static(__dirname + '/assets'));
 app.get('/',async (  req,res) =>{
     console.log("here")
     console.log(req.query.orderid)
- 
-    
     res.send("hi")
 })
 app.use(express.urlencoded());
@@ -55,11 +53,13 @@ cron.schedule('00 59 * * * *', function() {
 const ordersRouter = require("./routes/orders")
 const shimpents = require("./routes/shipments")
 const shimpentsRender = require("./routes/shipmentsRender")
+const wholesaler = require("./routes/wholesaler")
 
 
 app.use("/orders", ordersRouter)
 app.use("/shipments",shimpents)
 app.use("/render",shimpentsRender)
+app.use("/wholesaler",wholesaler)
 
 module.exports.app = app
 
