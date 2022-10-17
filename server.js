@@ -25,6 +25,21 @@ app.get('/raport', (req, res) => {
   res.sendFile(__dirname + '/index.html');
 });
 
+app.get('/prowizje', (req, res) => {
+  let margin = 0;
+  let marginThreshold = 1;
+  let marginConst = -1;
+
+  let data = {
+    margin: margin,
+    marginThreshold: marginThreshold,
+    marginConst: marginConst
+  };
+  
+  res.render('index', {
+    data: data
+  });
+});
 
 
 cron.schedule('00 59 * * * *', function() {

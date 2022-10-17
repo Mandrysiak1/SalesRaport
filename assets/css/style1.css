@@ -1,0 +1,39 @@
+.section {
+  margin-top: 1rem;
+}
+
+.section__footer {
+  display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+.form-input {
+  margin-bottom: 1rem;
+}
+
+.form-input__subtitle {
+  font-size: 0.75rem;
+  color: rgba(0, 0, 0, .85);
+  font-style: italic;
+}
+
+/* Toasts */
+
+.toast-container {
+  position: fixed;
+  bottom: 0;
+  right: 15px;
+}
+
+.toast-header {
+  background-color: transparent;
+}
+
+.toast {
+  margin-bottom: .5rem;
+}
+
+.alert-heading {
+  font-size: 1rem;
+}
