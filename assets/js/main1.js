@@ -1,7 +1,7 @@
 var state = {
   data: [],
-  highestIndex: 1,
-  totalRows: 1
+  highestIndex: 0,
+  totalRows: 0
 }
 
 const columns = 6;
@@ -13,18 +13,23 @@ const AlertType = {
   Info: 'info'
 }
 
-function addRow() {
-  let table = document.getElementById('margin-table');
+function addRow(id = '', values = {}) {
+  console.log(state);
+  let table = document.querySelector('#margin-table tbody');
   if(table) {
     state.highestIndex += 1;
     state.totalRows += 1;
 
     let newRow = table.insertRow();
-    newRow.id = 'row-' + state.highestIndex;
+    if(id === '')
+      newRow.id = 'row-' + state.highestIndex;
+    else
+      newRow.id = 'row-' + id;
   
     // add cell with id number
     let numberCell = newRow.insertCell(0);
-    numberCell.outerHTML = "<th scope='row'>" + state.highestIndex + "</th>";
+    let index = id !== '' ? id : state.highestIndex;
+    numberCell.outerHTML = "<th scope='row'>" + index + "</th>";
     
     // add cells with input values
     for (let i = 1; i < columns - 1; i++) {
@@ -32,8 +37,17 @@ function addRow() {
       let input = document.createElement('input');
       input.type = "number";
       input.classList.add('form-control', 'form-control-sm');
-      input.placeholder = labels[i - 1];
-      input.id = labels[i - 1] + '-' + state.highestIndex;
+      // if(values[labels[i - 1]] !== undefined && values[labels[i - 1]] >= 0) {
+      if(values[labels[i - 1]] !== undefined) {
+        input.value = values[labels[i - 1]];
+        console.log('input.value');
+      } else {
+        input.placeholder = labels[i - 1];
+        console.log("input.placeholder");
+      }
+      // input.placeholder = values[labels[i - 1]] !== undefined ? values[labels[i - 1]] : labels[i - 1];
+        
+      input.id = id !== '' ? labels[i - 1] + '-' + id : labels[i - 1] + '-' + state.highestIndex;
       newCell.appendChild(input);
     }
   
@@ -50,11 +64,11 @@ function addRow() {
       state.totalRows -= 1;
       if(id >= state.totalRows) {
         let rows = document.querySelectorAll('tbody tr');
-        console.log(rows);
         let lastRow = rows[rows.length - 1];
-        console.log(lastRow);
-        state.highestIndex = parseInt(lastRow.id.split('-')[1]);
-        console.log(state);
+        if(lastRow)
+          state.highestIndex = parseInt(lastRow.id.split('-')[1])
+        else 
+          state.highestIndex = 0;
       } 
 
       //delete data from state
@@ -85,6 +99,7 @@ async function getData() {
         let label = input.id.split('-')[0];
         let id = input.id.split('-')[1]
         let value = input.value;
+        console.log('value', value);
         let dataObj = {
           type: label,
           value: value
@@ -96,6 +111,8 @@ async function getData() {
     state.data = dataRows;
     console.log(state);
 
+  } else {
+    console.error('Found no table to append new row to!');
   }
 
   try {
@@ -220,3 +237,21 @@ const alert = (alertType, message) => {
   toast.show();
   alertContainer.append(wrapper);
 }
+
+function launchTableRows() {
+  if(periodsData && periodsData.length > 0) {
+    // state.highestIndex = periodsData.length;
+    // state.totalRows = periodsData.length;
+    for(let periodData of periodsData) {
+      // console.log(periodData);
+      // addRow(periodData.id, [periodData.min, periodData.max, periodData.value, periodData.percent]);
+      addRow(periodData.id + 1, periodData);
+    }
+  }
+}
+
+window.onload = function() {
+  console.log(periodsData);
+  periodsData = JSON.parse(periodsData);
+  launchTableRows();
+};

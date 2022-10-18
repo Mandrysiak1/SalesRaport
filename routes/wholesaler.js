@@ -60,7 +60,6 @@ router.get('/login', async (req, res) => {
 router.get('/prowizje', async (req, res) => {
 
     await getConfiguration()
-
     res.render('index', {
         data: periodsData
     });
@@ -83,7 +82,7 @@ async function getConfiguration() {
     con.end()
 
     periodsData = Object.values(JSON.parse(JSON.stringify(sqlresp)));
-    console.log(periodsData)
+    console.log('wyslalem do frontu: ', periodsData);
 }
 
 router.post('/setConfiguration', async (req, res) => {
@@ -101,6 +100,7 @@ router.post('/setConfiguration', async (req, res) => {
     let truncate = await con.awaitQuery(truncateSQL)
     con.end()
     let index = 0
+    console.log('dostalem do zapisania:', req.body.data);
     for (const element of req.body.data) {
        // console.log(element)
          await saveRowRoDB(element,index)
@@ -127,7 +127,7 @@ async function saveRowRoDB(row,index){
     let min = row.find(l => l.type === "min").value !='' ? row.find(l => l.type === "min").value : 0
     let max = row.find(l => l.type === "max").value !='' ? row.find(l => l.type === "max").value : 0
     let value = row.find(l => l.type === "value").value !='' ? row.find(l => l.type === "value").value : 0
-    let percent = row.find(l => l.type === "percent").value !='' ? row.find(l => l.type === "value").value : 0
+    let percent = row.find(l => l.type === "percent").value !='' ? row.find(l => l.type === "percent").value : 0
 
     var sql = "INSERT INTO ConfigurationTable(id,min,max,value,percent) VALUES (?)"
     var values = [
