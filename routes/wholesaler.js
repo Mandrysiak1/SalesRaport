@@ -152,13 +152,22 @@ async function saveRowRoDB(row,index){
 
 async function getCSV() {
 
-    let url = 'https://panel-d.baselinker.com/offers_export.php?hash=30132937036105965996cbd5994b1ff07518ffa' //wszystkie
-    //let url = 'https://panel-d.baselinker.com/offers_export.php?hash=3013293029fa3b612a3311b4273b4c603185a32' //trwające
-    //let url = 'https://panel-d.baselinker.com/offers_export.php?hash=301329362d7938604a74e6eb2dd16f590338daa' //trwające
+    let url3 = 'https://panel-d.baselinker.com/offers_export.php?hash=3013293beac04d53aca4e1194b9669b9b83a39f' //trwające
+    let url = 'https://panel-d.baselinker.com/offers_export.php?hash=3013293029fa3b612a3311b4273b4c603185a32' //trwające
+    let url1 = 'https://panel-d.baselinker.com/offers_export.php?hash=301329362d7938604a74e6eb2dd16f590338daa' //trwające
+    let url2 = 'https://panel-d.baselinker.com/offers_export.php?hash=30132936f2a9330fda52095dca33b55946dd532' //trwające
     
+    let urls = []
+    urls.push(url)
+    urls.push(url1)
+    urls.push(url3)
+    urls.push(url2)
+
+    var item = urls[Math.floor(Math.random() * urls.length)];
+
     return await new Promise((resolve) => {
 
-        https.get(url, (res) => {
+        https.get(item, (res) => {
 
             const path = `${__dirname}/export.csv`;
             const filePath = fs.createWriteStream(path);
@@ -169,9 +178,10 @@ async function getCSV() {
                 resolve()
             })
         })
-
+        
 
     })
+
 
 
 }
@@ -295,13 +305,14 @@ async function calculateAndChange() {
                             let myMargin = parseFloat(el.value) + (parseFloat(obj.wholesalerPrice) * (el.percent / 100))                       
                             
                             let allegroMargin = parseFloat(await getMarginFromAllegro(obj.categoryID, basicprice + myMargin))
-                            console.log("wp:", basicprice)
-                            console.log("margin:", myMargin)
-                            console.log("allegroMargin:", allegroMargin)
+                            // console.log("wp:", basicprice)
+                            // console.log("margin:", myMargin)
+                            // console.log("allegroMargin:", allegroMargin)
                             obj.allegroPrice = parseFloat(basicprice + myMargin + allegroMargin).toFixed(2)
                             
                             obj.prestaPrice = parseFloat(basicprice + myMargin).toFixed(2)
 
+                            console.log("index: " + index )
                             break;
                         }
                     }
