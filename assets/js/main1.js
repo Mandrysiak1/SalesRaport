@@ -16,14 +16,25 @@ async function calculateMargin() {
   // let message = JSON.stringify(state)
   // alert(AlertType.Success, message);
 
-  const response = await fetch('/wholesaler/login', {
-    method: 'get',
-    headers: {
-        'Content-Type': 'application/json'
-    }
-  });
 
-  let myJson = await response.json();
+
+  try {
+    const response = await fetch('/wholesaler/login', {
+      method: 'get',
+      headers: {
+          'Content-Type': 'application/json'
+      }
+    });
+    let myJson = await response.json();
+
+  } catch (error) {
+    
+    message = "Zrobione"
+
+    alert(AlertType.Success, message);
+  
+    preloader.style.display = "none";
+  }
 
   message = "Zrobione"
 
