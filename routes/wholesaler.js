@@ -36,7 +36,8 @@ var marginConst = 0
 
 router.get('/login', async (req, res) => {
 
-    // await getCSV()
+    console.log("s")
+    await getCSV()
     await readCSV()
     await getConfiguration()
     await updateLoginData()
@@ -44,7 +45,11 @@ router.get('/login', async (req, res) => {
     await updateLoginData()
     await calculateAndChange()
 
-    res.send("eo");
+    console.log("koniec")
+    res.json({
+        status: "OK",
+        message: "ok"
+    })
 
 
 })
@@ -264,7 +269,7 @@ async function calculateAndChange() {
 
                     index++;
 
-                    if (obj.wholesalerPrice < marginTreshold) {
+                    if (parseFloat(obj.wholesalerPrice) / 1.23 < parseFloat(marginTreshold)) {
                         let basicprice = parseFloat(obj.wholesalerPrice);
                         let myMargin = parseFloat(marginConst)
                         let allegroMargin = parseFloat(await getMarginFromAllegro(obj.categoryID, basicprice + myMargin))

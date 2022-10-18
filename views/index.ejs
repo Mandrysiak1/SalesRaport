@@ -37,10 +37,18 @@
 
           </div>
           <div class="section__footer">
-            <button type="button" class="btn btn-primary" id="form-send" onClick="sendFormData()">Wyślij</button>
-            <div class="spinner-border text-primary ms-2" role="status" style="display: none;" id="form-preloader">
+            <button type="button" class="btn btn-primary" id="form-send" onClick="sendFormData()">
+              <span class="btn-text">Wyślij</span>
+              <div class="spinner-border spinner-border-sm text-light ms-2" role="status" style="display: none;" id="form-preloader">
                 <span class="visually-hidden">Loading...</span>
-            </div>
+              </div>
+            </button>
+            <button type="button" class="btn btn-info mx-1" id="form-send" onClick="calculateMargin()">
+              <span class="btn-text">Przelicz</span>
+              <div class="spinner-border spinner-border-sm text-dark ms-2" role="status" style="display: none;" id="calculate-preloader">
+                <span class="visually-hidden">Loading...</span>
+              </div>
+            </button>
           </div>
         </div>
       </div>

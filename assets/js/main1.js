@@ -9,6 +9,28 @@ const AlertType = {
   Fail: 'danger',
   Info: 'info'
 }
+async function calculateMargin() {
+  let preloader = document.getElementById('calculate-preloader');
+  preloader.style.display = "inline-block";
+
+  // let message = JSON.stringify(state)
+  // alert(AlertType.Success, message);
+
+  const response = await fetch('/wholesaler/login', {
+    method: 'get',
+    headers: {
+        'Content-Type': 'application/json'
+    }
+  });
+
+  let myJson = await response.json();
+
+  message = "Zrobione"
+
+  alert(AlertType.Success, message);
+
+  preloader.style.display = "none";
+}
 
 async function sendFormData() {
   let preloader = document.getElementById('form-preloader');
@@ -28,7 +50,7 @@ async function sendFormData() {
     headers: {
         'Content-Type': 'application/json'
     }
-});
+  });
 
   let myJson = await response.json();
 
