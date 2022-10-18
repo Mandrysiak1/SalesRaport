@@ -2,6 +2,14 @@
   margin-top: 1rem;
 }
 
+.section__header--row {
+  display: flex;
+  flex-direction: row;
+  align-content: center;
+  align-items: center;
+  justify-content: space-between;
+}
+
 .section__footer {
   display: flex;
     flex-direction: row;

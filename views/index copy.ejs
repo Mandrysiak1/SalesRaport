@@ -15,44 +15,35 @@
     <div class="page__header"><h1>Prowizje</h1></div>
     <div class="page__content">
       <div class="section">
-        <div class="section__header section__header--row"><h2>Formularz prowizji</h2><button type="button" class="btn btn-success btn-sm add" onClick="addRow()"><i class="bi bi-plus"></i> Dodaj nowy wiersz</button></div>
+        <div class="section__header"><h2>Formularz prowizji</h2></div>
         <div class="section__body">
+          <div class="form-wrapper">
+            <!-- 1 -->
+            <div class="form-input">
+                <label for="data-margin">Marża ogólna (%)</label>
+                <input type="number" class="form-control" id="data-margin" value="<%=data.margin %>">                
+            </div>
+            <!-- 2 -->
+            <div class="form-input">
+                <label for="data-marginThreshold">Wartość graniczna marży (zł)</label>
+                <input type="number" class="form-control" id="data-marginThreshold" value="<%=data.marginThreshold %>">                
+            </div>
+            <!-- 3 -->
+            <div class="form-input">
+                <label for="data-marginConst">Wartość stała marży (zł)</label>
+                <div class="form-input__subtitle">(Stała wartość marży poniżej wartości granicznej)</div>
+                <input type="number" class="form-control" id="data-marginConst" value="<%=data.marginConst %>">                
+            </div>
 
-          <table class="table" id="margin-table">
-            <thead>
-              <tr>
-                <th scope="col">#</th>
-                <th scope="col">Min</th>
-                <th scope="col">Max</th>
-                <th scope="col">Marża [zł]</th>
-                <th scope="col">Marża [%]</th>
-                <th scope="col"></th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr id="row-1">
-                <th scope="row">1</th>
-                <td><input class="form-control form-control-sm" type="number" placeholder="min" id="min-1"></td>
-                <td><input class="form-control form-control-sm" type="number" placeholder="max" id="max-1"></td>
-                <td><input class="form-control form-control-sm" type="number" placeholder="value" id="value-1"></td>
-                <td><input class="form-control form-control-sm" type="number" placeholder="percent" id="percent-1"></td>
-                <td> - </td>
-              </tr>
-            </tbody>
-          </table>
-
-
-
-
-
+          </div>
           <div class="section__footer">
-            <button type="button" class="btn btn-primary" id="form-send" onClick="getData()">
-              <span class="btn-text">Zapisz do bazy</span>
+            <button type="button" class="btn btn-primary" id="form-send" onClick="sendFormData()">
+              <span class="btn-text">Wyślij</span>
               <div class="spinner-border spinner-border-sm text-light ms-2" role="status" style="display: none;" id="form-preloader">
                 <span class="visually-hidden">Loading...</span>
               </div>
             </button>
-            <button type="button" class="btn btn-info mx-1" id="form-calculate" onClick="calculateMargin()">
+            <button type="button" class="btn btn-info mx-1" id="form-send" onClick="calculateMargin()">
               <span class="btn-text">Przelicz</span>
               <div class="spinner-border spinner-border-sm text-dark ms-2" role="status" style="display: none;" id="calculate-preloader">
                 <span class="visually-hidden">Loading...</span>

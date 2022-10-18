@@ -1,22 +1,113 @@
 var state = {
-  margin: -1,
-  marginThreshold: -1,
-  marginConst: -1
+  data: [],
+  highestIndex: 1,
+  totalRows: 1
 }
+
+const columns = 6;
+const labels = ["min", "max", "value", "percent"];
 
 const AlertType = {
   Success: 'success',
   Fail: 'danger',
   Info: 'info'
 }
+
+function addRow() {
+  let table = document.getElementById('margin-table');
+  if(table) {
+    state.highestIndex += 1;
+    state.totalRows += 1;
+
+    let newRow = table.insertRow();
+    newRow.id = 'row-' + state.highestIndex;
+  
+    // add cell with id number
+    let numberCell = newRow.insertCell(0);
+    numberCell.outerHTML = "<th scope='row'>" + state.highestIndex + "</th>";
+    
+    // add cells with input values
+    for (let i = 1; i < columns - 1; i++) {
+      let newCell = newRow.insertCell(i);
+      let input = document.createElement('input');
+      input.type = "number";
+      input.classList.add('form-control', 'form-control-sm');
+      input.placeholder = labels[i - 1];
+      input.id = labels[i - 1] + '-' + state.highestIndex;
+      newCell.appendChild(input);
+    }
+  
+    // add cell with buttons
+    let actionCell = newRow.insertCell(columns - 1);
+    let button = document.createElement('button');
+    button.classList.add('btn', 'btn-danger', 'btn-sm', 'remove');
+    button.addEventListener('click', function(event) {
+      // remove Node from DOM
+      let targetElement = event.target;
+      let targetElementRow = targetElement.closest('tr');
+      let id = targetElementRow.id.split('-')[1] - 1;
+      targetElementRow.parentNode.removeChild(targetElementRow);
+      state.totalRows -= 1;
+      if(id >= state.totalRows) {
+        let rows = document.querySelectorAll('tbody tr');
+        console.log(rows);
+        let lastRow = rows[rows.length - 1];
+        console.log(lastRow);
+        state.highestIndex = parseInt(lastRow.id.split('-')[1]);
+        console.log(state);
+      } 
+
+      //delete data from state
+      // let id = targetElementRow.id.split('-')[1] - 1;
+      // console.log('id', id);
+      // state.data.splice(id, 1);
+      // state.totalRows -= 1;
+      // console.log(state);
+    });
+    button.innerHTML = '<i class="bi bi-trash-fill"></i>';
+    actionCell.appendChild(button);
+  } else {
+    console.error('Found no table to append new row to!');
+  }
+}
+
+function getData() {
+  let preloader = document.getElementById('form-preloader');
+  preloader.style.display = "inline-block";
+  let table = document.getElementById('margin-table');
+  if(table) {
+    let rows = table.querySelectorAll('tbody tr');
+    let dataRows = [];
+    for (let row of rows) {
+      let inputs = row.querySelectorAll('input');
+      let dataRow = [];
+      for (let input of inputs) {
+        let label = input.id.split('-')[0];
+        let id = input.id.split('-')[1]
+        let value = input.value;
+        let dataObj = {
+          type: label,
+          value: value
+        }
+        dataRow.push(dataObj);
+      }
+      dataRows.push(dataRow);
+    }
+    state.data = dataRows;
+    console.log(state);
+  }
+
+  let message = JSON.stringify(state)
+  alert(AlertType.Success, message);
+
+  preloader.style.display = "none";
+}
+
+
+
 async function calculateMargin() {
   let preloader = document.getElementById('calculate-preloader');
   preloader.style.display = "inline-block";
-
-  // let message = JSON.stringify(state)
-  // alert(AlertType.Success, message);
-
-
 
   try {
     const response = await fetch('/wholesaler/login', {
