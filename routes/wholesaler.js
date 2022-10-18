@@ -18,6 +18,7 @@ const {
 const {
     resolve
 } = require('path');
+const e = require('express');
 
 const router = express.Router()
 
@@ -30,9 +31,11 @@ var clientSecret = "9ohr7Ehw45BDR77zK6ivL44Xi492ZP4hP1BwM8UkZ0G1xf05yzpQq3zmA0e6
 //var device_code = 'HXWX1IZzdbLKDs1GHY8JmHIWgBi05CcD'
 var access_token = ''
 var refreshToken = ''
-var margin = 0
-var marginTreshold = 0
-var marginConst = 0
+// var margin = 0
+// var marginTreshold = 0
+// var marginConst = 0
+
+var periodsData;
 
 router.get('/login', async (req, res) => {
 
@@ -58,14 +61,8 @@ router.get('/prowizje', async (req, res) => {
 
     await getConfiguration()
 
-    let data = {
-        margin: margin,
-        marginThreshold: marginTreshold,
-        marginConst: marginConst
-    };
-
     res.render('index', {
-        data: data
+        data: periodsData
     });
 
 })
@@ -79,18 +76,46 @@ async function getConfiguration() {
         database: "server179088_raportyBL"
     });
 
-    var sql = 'SELECT basicMargin, marginTreshold, marginTresholdValue FROM `configuration` where id = 1'
+    var sql = 'SELECT id, min, max, value, percent FROM `ConfigurationTable` order by id'
 
     let sqlresp = await con.awaitQuery(sql)
 
     con.end()
 
-    margin = sqlresp[0].basicMargin
-    marginTreshold = sqlresp[0].marginTreshold
-    marginConst = sqlresp[0].marginTresholdValue
+    periodsData = Object.values(JSON.parse(JSON.stringify(sqlresp)));
+    console.log(periodsData)
 }
 
 router.post('/setConfiguration', async (req, res) => {
+    var con = mysql.createConnection({
+        host: "mariadb105.server179088.nazwa.pl",
+        user: "server179088_raportyBL",
+        password: process.env.DATABASE_PASSWORD,
+        database: "server179088_raportyBL"
+    });
+ 
+
+    // console.log(req.body.data)
+
+    var truncateSQL = 'TRUNCATE ConfigurationTable'
+    let truncate = await con.awaitQuery(truncateSQL)
+    con.end()
+    let index = 0
+    for (const element of req.body.data) {
+       // console.log(element)
+         await saveRowRoDB(element,index)
+        index++
+
+    }
+
+    res.json({
+        status: "OK",
+        message: "ok"
+    })
+
+})
+
+async function saveRowRoDB(row,index){
 
     var con = mysql.createConnection({
         host: "mariadb105.server179088.nazwa.pl",
@@ -99,19 +124,18 @@ router.post('/setConfiguration', async (req, res) => {
         database: "server179088_raportyBL"
     });
 
-    console.log(req.body)
+    let min = row.find(l => l.type === "min").value !='' ? row.find(l => l.type === "min").value : 0
+    let max = row.find(l => l.type === "max").value !='' ? row.find(l => l.type === "max").value : 0
+    let value = row.find(l => l.type === "value").value !='' ? row.find(l => l.type === "value").value : 0
+    let percent = row.find(l => l.type === "percent").value !='' ? row.find(l => l.type === "value").value : 0
 
-    var truncateSQL = 'TRUNCATE configuration'
-
-    let truncate = await con.awaitQuery(truncateSQL)
-
-
-    var sql = "INSERT INTO configuration(id,basicMargin,marginTreshold,marginTresholdValue) VALUES (?)"
+    var sql = "INSERT INTO ConfigurationTable(id,min,max,value,percent) VALUES (?)"
     var values = [
-        [1],
-        [parseFloat(req.body.margin)],
-        [parseFloat(req.body.marginThreshold)],
-        [parseFloat(req.body.marginConst)]
+        [index],
+        [parseFloat(min)],
+        [parseFloat(max)],
+        [parseFloat(value)],
+        [parseFloat(percent)]
     ]
     con.query(sql, [values], function(error, result) {
         if (error) {
@@ -123,18 +147,14 @@ router.post('/setConfiguration', async (req, res) => {
     });
 
 
-    res.json({
-        status: "OK",
-        message: "ok"
-    })
 
-})
-
+}
 
 async function getCSV() {
 
-    //let url = 'https://panel-d.baselinker.com/offers_export.php?hash=30132937036105965996cbd5994b1ff07518ffa' //wszystkie
-    let url = 'https://panel-d.baselinker.com/offers_export.php?hash=3013293029fa3b612a3311b4273b4c603185a32' //trwające
+    let url = 'https://panel-d.baselinker.com/offers_export.php?hash=30132937036105965996cbd5994b1ff07518ffa' //wszystkie
+    //let url = 'https://panel-d.baselinker.com/offers_export.php?hash=3013293029fa3b612a3311b4273b4c603185a32' //trwające
+    //let url = 'https://panel-d.baselinker.com/offers_export.php?hash=301329362d7938604a74e6eb2dd16f590338daa' //trwające
     
     return await new Promise((resolve) => {
 
@@ -201,7 +221,7 @@ async function readCSV() {
 }
 async function calculateAndChange() {
 
-    let marginInMultiplicant = (margin / 100);
+    // let marginInMultiplicant = (margin / 100);
 
     var con = mysql.createConnection({
         host: "mariadb105.server179088.nazwa.pl",
@@ -257,8 +277,6 @@ async function calculateAndChange() {
 
         for (let element of sqlresp) {
 
-           // console.log("xd", res.data)
-
             if (res.data.products[element.ProductID] !== undefined) {
 
                 var obj = arraychunk.find(e => e.productID === element.ProductID);
@@ -269,39 +287,58 @@ async function calculateAndChange() {
 
                     index++;
 
-                    if (parseFloat(obj.wholesalerPrice) / 1.23 < parseFloat(marginTreshold)) {
-                        let basicprice = parseFloat(obj.wholesalerPrice);
-                        let myMargin = parseFloat(marginConst)
-                        let allegroMargin = parseFloat(await getMarginFromAllegro(obj.categoryID, basicprice + myMargin))
+                    for (const el of periodsData) {
+                        if(parseFloat(obj.wholesalerPrice) < el.max)
+                        {
+                            let basicprice = parseFloat(obj.wholesalerPrice);
+                                                      
+                            let myMargin = parseFloat(el.value) + (parseFloat(obj.wholesalerPrice) * (el.percent / 100))                       
+                            
+                            let allegroMargin = parseFloat(await getMarginFromAllegro(obj.categoryID, basicprice + myMargin))
+                            console.log("wp:", basicprice)
+                            console.log("margin:", myMargin)
+                            console.log("allegroMargin:", allegroMargin)
+                            obj.allegroPrice = parseFloat(basicprice + myMargin + allegroMargin).toFixed(2)
+                            
+                            obj.prestaPrice = parseFloat(basicprice + myMargin).toFixed(2)
 
-                        // console.log("wp:", basicprice)
-                        // console.log("margin:", myMargin)
-                        // console.log("allegroMargin:", allegroMargin)
-                        obj.allegroPrice = parseFloat(basicprice + myMargin + allegroMargin).toFixed(2)
-
-                        obj.prestaPrice = parseFloat(basicprice + myMargin).toFixed(2)
-                        console.log("Price: " + obj.allegroPrice)
-
-                    } else {
-
-                        let basicprice = parseFloat(obj.wholesalerPrice);
-                        let myMargin = parseFloat((obj.wholesalerPrice / 1.23) * marginInMultiplicant)
-                        console.log("md:",marginInMultiplicant)
-                        let allegroMargin = parseFloat(await getMarginFromAllegro(obj.categoryID, basicprice + myMargin))
-
-                        // console.log("wp:", basicprice)
-                        // console.log("margin:", myMargin)
-                        // console.log("allegroMargin:", allegroMargin)
-                        obj.allegroPrice = parseFloat(basicprice + myMargin + allegroMargin).toFixed(2)
-
-                        obj.prestaPrice = parseFloat(basicprice + myMargin).toFixed(2)
-
-
-
-
-
-                        console.log("Price: " + obj.allegroPrice)
+                            break;
+                        }
                     }
+
+                    // if (parseFloat(obj.wholesalerPrice) / 1.23 < parseFloat(marginTreshold)) {
+                    //     let basicprice = parseFloat(obj.wholesalerPrice);
+                    //     let myMargin = parseFloat(marginConst)
+                    //     let allegroMargin = parseFloat(await getMarginFromAllegro(obj.categoryID, basicprice + myMargin))
+
+                    //     // console.log("wp:", basicprice)
+                    //     // console.log("margin:", myMargin)
+                    //     // console.log("allegroMargin:", allegroMargin)
+                    //     obj.allegroPrice = parseFloat(basicprice + myMargin + allegroMargin).toFixed(2)
+
+                    //     obj.prestaPrice = parseFloat(basicprice + myMargin).toFixed(2)
+                    //     console.log("Price: " + obj.allegroPrice)
+
+                    // } else {
+
+                    //     let basicprice = parseFloat(obj.wholesalerPrice);
+                    //     let myMargin = parseFloat((obj.wholesalerPrice / 1.23) * marginInMultiplicant)
+                    //     console.log("md:",marginInMultiplicant)
+                    //     let allegroMargin = parseFloat(await getMarginFromAllegro(obj.categoryID, basicprice + myMargin))
+
+                    //     // console.log("wp:", basicprice)
+                    //     // console.log("margin:", myMargin)
+                    //     // console.log("allegroMargin:", allegroMargin)
+                    //     obj.allegroPrice = parseFloat(basicprice + myMargin + allegroMargin).toFixed(2)
+
+                    //     obj.prestaPrice = parseFloat(basicprice + myMargin).toFixed(2)
+
+
+
+
+
+                    //     console.log("Price: " + obj.allegroPrice)
+                    // }
 
                 }
             }

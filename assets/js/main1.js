@@ -71,7 +71,7 @@ function addRow() {
   }
 }
 
-function getData() {
+async function getData() {
   let preloader = document.getElementById('form-preloader');
   preloader.style.display = "inline-block";
   let table = document.getElementById('margin-table');
@@ -95,11 +95,30 @@ function getData() {
     }
     state.data = dataRows;
     console.log(state);
+
+  }
+
+  try {
+    const response = await fetch('/wholesaler/setConfiguration', {
+      method: 'post',
+      body: JSON.stringify(state),
+      headers: {
+          'Content-Type': 'application/json'
+      }
+    });
+    let myJson = await response.json();
+
+  } catch (error) {
+
+    message = "Zrobione"
+
+    alert(AlertType.Success, message);
+  
+    preloader.style.display = "none";
   }
 
   let message = JSON.stringify(state)
   alert(AlertType.Success, message);
-
   preloader.style.display = "none";
 }
 
@@ -119,7 +138,7 @@ async function calculateMargin() {
     let myJson = await response.json();
 
   } catch (error) {
-    
+
     message = "Zrobione"
 
     alert(AlertType.Success, message);
