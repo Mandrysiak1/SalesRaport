@@ -66,6 +66,8 @@ const alert = (alertType, message) => {
 // }
 
 async function deletePackage(packageId) {
+    console.log(packageId)
+    console.log(orderPackages.packages)
     let package = orderPackages.packages.find(package => Number.parseInt(package.package_id) === Number.parseInt(packageId));
 
     let packageData = {
@@ -369,7 +371,10 @@ async function createPackage()
 window.onload = async function() {
     console.log('Func launched');
     console.log('orderPackages', orderPackages);
+
+
     orderPackages = JSON.parse(orderPackages);
+    
     console.log('orderPackagesparse', orderPackages);
     // let deliveryMethod = document.getElementById('delivery-method-span').textContent;
     // state.deliveryMethod = deliveryMethod;

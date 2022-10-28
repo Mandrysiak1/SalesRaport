@@ -54,6 +54,11 @@ async function getOrderDetails(orderID) {
         headers: { "X-BLToken": process.env.BASELINKER_API_KEY, 'Content-Type': 'multipart/form-data' }
       })
   
+      console.log()
+      for (const iterator of resp.data.packages) {
+        iterator.tracking_url = "to be fixed :/"
+        
+      }
     return resp.data
   }
   function checkIfCod(fields, orderDetails) {
