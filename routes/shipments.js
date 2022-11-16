@@ -327,7 +327,7 @@ async function getAllegroID(deliveryMethod) {
 
   if (deliveryMethod === 'Allegro DPD') {
 
-    return 9685250
+    return "c3066682-97a3-42fe-9eb5-3beeccab840c"
 
   } else if (deliveryMethod === 'Allegro UPS') {
 
@@ -339,16 +339,15 @@ async function getAllegroID(deliveryMethod) {
 
   } else if (deliveryMethod === 'Allegro One Punkt (One Kurier)') {
 
-    return 11270948
+    return "0ee3467f-5451-4060-856e-7a2b502abe55"
 
   } else if (deliveryMethod === 'Allegro One Box (One Kurier)') {
 
-    return 11270948
+    return "0b9bed2c-0bc1-4e1f-9694-29bb39ebb483"
   } else return -1
 
-
-
 }
+
 async function removePackage(courier_code, package_id, package_number) {
 
   console.log("Remove package data: " + courier_code, package_number, package_id)
