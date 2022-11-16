@@ -54,6 +54,29 @@ cron.schedule('00 59 * * * *', function() {
   });
   });
 
+  cron.schedule('0 0 5,17 * * *', function() {
+    console.log('Recalculating prestashop prices');
+    request(app)
+  .get('/wholesaler/updatePresta')
+  .expect(200)
+  .end(function(err, res) {
+    if (err) throw err;
+    console.log('call done');
+  });
+  });
+
+  cron.schedule('0 0 6,18 * * *', function() {
+    console.log('Recalculating allegro prices');
+    request(app)
+  .get('/wholesaler/login')
+  .expect(200)
+  .end(function(err, res) {
+    if (err) throw err;
+    console.log('call done');
+  });
+  });
+
+
   cron.schedule('00 18 * * 0', function() {
     console.log('Running getTask');
     request(app)

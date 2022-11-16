@@ -10,6 +10,33 @@ router.use(require('body-parser').json());
 
 var raportDays = 14;
 
+var connection;
+
+function handleDisconnect() {
+  connection = mysql.createConnection({
+    host: "mariadb105.server179088.nazwa.pl",
+    user: "server179088_raportyBL",
+    password: process.env.DATABASE_PASSWORD,
+    database: "server179088_raportyBL"
+  }); // Recreate the connection, since
+                                                  // the old one cannot be reused.
+
+  connection.connect(function(err) {              // The server is either down
+    if(err) {                                     // or restarting (takes a while sometimes).
+      console.log('error when connecting to db:', err);
+      setTimeout(handleDisconnect, 2000); // We introduce a delay before attempting to reconnect,
+    }                                     // to avoid a hot loop, and to allow our node script to
+  });                                     // process asynchronous requests in the meantime.
+                                          // If you're also serving http, display a 503 error.
+  connection.on('error', function(err) {
+    console.log('db error', err);
+    if(err.code === 'PROTOCOL_CONNECTION_LOST') { // Connection to the MySQL server is usually
+      handleDisconnect();                         // lost due to either server restart, or a
+    } else {                                      // connnection idle timeout (the wait_timeout
+      throw err;                                  // server variable configures this)
+    }
+  });
+}
 
 router.get('/addall', async (req, res) => {
 
@@ -19,23 +46,19 @@ router.get('/addall', async (req, res) => {
 
 router.post('/get', async (req, res) => {
 
+  handleDisconnect()
+
   console.log("Data from rq: " + req.body.days)
   raportDays = req.body.days == null ? raportDays : req.body.days
 
   var allFilenames = [];
 
-  var con = mysql.createConnection({
-    host: "mariadb105.server179088.nazwa.pl",
-    user: "server179088_raportyBL",
-    password: process.env.DATABASE_PASSWORD,
-    database: "server179088_raportyBL"
-  });
-
-
-  con.on(`error`, (err) => {
+  connection.on(`error`, (err) => {
     console.error(`Connection error ${err.code}`);
   });
 
+
+  
 
   var d = new Date();
   d.setDate(d.getDate() - raportDays);
@@ -67,7 +90,8 @@ router.post('/get', async (req, res) => {
       var obj = new Object()
       obj.product_id = product.product_id
       obj.timestamp = 0;
-      obj.timestamp = await getLastPurchase(product.product_id, con)
+      obj.timestamp = await getLastPurchase(product.product_id, connection)
+      
       selectedProducts.push(obj)
     }
   }
@@ -77,7 +101,8 @@ router.post('/get', async (req, res) => {
     [datastamp]
   ]
 
-  let sql_result = await con.awaitQuery(sql, [valuse])
+  let sql_result = await connection.awaitQuery(sql, [valuse])
+  connection.end()
 
   for (let element of sql_result) {
 
@@ -226,9 +251,21 @@ router.post('/get', async (req, res) => {
       var vendorArr = []
 
       dataArrSelected.forEach(row => {
-        if (!vendorArr.includes(row[7].toLowerCase())) {
-          vendorArr.push(row[7].toLowerCase())
+        console.log(row)
+
+        if(row[7] !== undefined)
+        {
+          if (!vendorArr.includes(row[7].toLowerCase())) {
+            vendorArr.push(row[7].toLowerCase())
+          }
+        }else{
+          if (!vendorArr.includes("nieznany")) {
+            vendorArr.push("nieznany")
+            row[7] = "nieznany";
+          }
         }
+
+
       })
 
       vendorArr.forEach(vendor => {
@@ -274,6 +311,7 @@ router.post('/get', async (req, res) => {
 
 router.get('/add', (req, res) => {
 
+  handleDisconnect()
 
   var d = new Date();
   d.setHours(d.getHours() - 2);
@@ -293,16 +331,9 @@ router.get('/add', (req, res) => {
     .post('https://api.baselinker.com/connector.php', data, { headers: { "X-BLToken": process.env.BASELINKER_API_KEY, 'Content-Type': 'multipart/form-data' } })
     .then(response => {
 
-      var con = mysql.createConnection({
-        host: "mariadb105.server179088.nazwa.pl",
-        user: "server179088_raportyBL",
-        password: process.env.DATABASE_PASSWORD,
-        database: "server179088_raportyBL"
-      });
-
       var data = []
       var sql = "SELECT orderID FROM orders"
-      con.query(sql, function (err, result) {
+      connection.query(sql, function (err, result) {
         if (err) throw err;
 
         result.forEach(element => {
@@ -336,21 +367,23 @@ router.get('/add', (req, res) => {
                   [sku],
                   [timestamp]
                 ]
-                con.query(sql, [valuse], function (err, result) {
+                connection.query(sql, [valuse], function (err, result) {
                   if (err) throw err;
 
+                  //connection.end()
                 });
               }
             }
           }
         }
       });
-
+      //connection.end()
       res.send("Add");
 
     })
     .catch(error => {
       console.error(error);
+      //connection.end()
     });
 
 })
@@ -519,6 +552,7 @@ async function asyncCall(index, con) {
                     ]
                     con.query(sql, [valuse], function (err, result) {
                       if (err) throw err;
+                      con.end()
                     });
                   }
                 }
@@ -542,17 +576,12 @@ async function asyncCall(index, con) {
 
 async function processGet() {
 
-  var con = mysql.createConnection({
-    host: "mariadb105.server179088.nazwa.pl",
-    user: "server179088_raportyBL",
-    password: process.env.DATABASE_PASSWORD,
-    database: "server179088_raportyBL"
-  });
+handleDisconnect()
 
   for (let index = 0; index < 12 * 30 * 7; index++) {
-    await asyncCall(index, con)
+    await asyncCall(index, connection)
   }
-  con.end()
+  connection.end()
 }
 
 

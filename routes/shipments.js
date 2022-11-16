@@ -331,7 +331,7 @@ async function getAllegroID(deliveryMethod) {
 
   } else if (deliveryMethod === 'Allegro UPS') {
 
-    return 9685251
+    return "0e4c7d59-64b6-4b06-89c3-c1d941506dd0"
 
   } else if (deliveryMethod === 'Allegro DPD z granicę') {
 

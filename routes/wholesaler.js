@@ -19,6 +19,7 @@ const {
     resolve
 } = require('path');
 const e = require('express');
+const { parse } = require('uuid');
 
 const router = express.Router()
 
@@ -37,6 +38,35 @@ var refreshToken = ''
 
 var periodsData;
 
+var connection;
+
+function handleDisconnect() {
+  connection = mysql.createConnection({
+    host: "mariadb105.server179088.nazwa.pl",
+    user: "server179088_raportyBL",
+    password: process.env.DATABASE_PASSWORD,
+    database: "server179088_raportyBL"
+  }); // Recreate the connection, since
+                                                  // the old one cannot be reused.
+
+  connection.connect(function(err) {              // The server is either down
+    if(err) {                                     // or restarting (takes a while sometimes).
+      console.log('error when connecting to db:', err);
+      setTimeout(handleDisconnect, 2000); // We introduce a delay before attempting to reconnect,
+    }                                     // to avoid a hot loop, and to allow our node script to
+  });                                     // process asynchronous requests in the meantime.
+                                          // If you're also serving http, display a 503 error.
+  connection.on('error', function(err) {
+    console.log('db error', err);
+    if(err.code === 'PROTOCOL_CONNECTION_LOST') { // Connection to the MySQL server is usually
+      handleDisconnect();                         // lost due to either server restart, or a
+    } else {                                      // connnection idle timeout (the wait_timeout
+      throw err;                                  // server variable configures this)
+    }
+  });
+}
+
+
 router.get('/login', async (req, res) => {
 
     console.log("s")
@@ -48,6 +78,9 @@ router.get('/login', async (req, res) => {
     await updateLoginData()
     await calculateAndChange()
 
+
+
+
     console.log("koniec")
     res.json({
         status: "OK",
@@ -56,6 +89,28 @@ router.get('/login', async (req, res) => {
 
 
 })
+
+router.get('/updatePresta', async (req, res) => {
+
+
+    await getConfiguration()
+    await updateLoginData()
+    await refreshTokenfun()
+    await updateLoginData()
+    await calculatePresta()
+
+
+    console.log("koniec presta")
+    res.json({
+        status: "OK",
+        message: "ok"
+    })
+
+
+})
+
+
+
 
 router.get('/prowizje', async (req, res) => {
 
@@ -68,37 +123,28 @@ router.get('/prowizje', async (req, res) => {
 
 async function getConfiguration() {
 
-    var con = mysql.createConnection({
-        host: "mariadb105.server179088.nazwa.pl",
-        user: "server179088_raportyBL",
-        password: process.env.DATABASE_PASSWORD,
-        database: "server179088_raportyBL"
-    });
+
+    handleDisconnect()
 
     var sql = 'SELECT id, min, max, value, percent FROM `ConfigurationTable` order by id'
 
-    let sqlresp = await con.awaitQuery(sql)
-
-    con.end()
+    let sqlresp = await connection.awaitQuery(sql)
 
     periodsData = Object.values(JSON.parse(JSON.stringify(sqlresp)));
     console.log('wyslalem do frontu: ', periodsData);
 }
 
 router.post('/setConfiguration', async (req, res) => {
-    var con = mysql.createConnection({
-        host: "mariadb105.server179088.nazwa.pl",
-        user: "server179088_raportyBL",
-        password: process.env.DATABASE_PASSWORD,
-        database: "server179088_raportyBL"
-    });
+
+    handleDisconnect()
+
  
 
     // console.log(req.body.data)
 
     var truncateSQL = 'TRUNCATE ConfigurationTable'
-    let truncate = await con.awaitQuery(truncateSQL)
-    con.end()
+    let truncate = await connection.awaitQuery(truncateSQL)
+    //connection.end()
     let index = 0
     console.log('dostalem do zapisania:', req.body.data);
     for (const element of req.body.data) {
@@ -117,12 +163,7 @@ router.post('/setConfiguration', async (req, res) => {
 
 async function saveRowRoDB(row,index){
 
-    var con = mysql.createConnection({
-        host: "mariadb105.server179088.nazwa.pl",
-        user: "server179088_raportyBL",
-        password: process.env.DATABASE_PASSWORD,
-        database: "server179088_raportyBL"
-    });
+    handleDisconnect()
 
     let min = row.find(l => l.type === "min").value !='' ? row.find(l => l.type === "min").value : 0
     let max = row.find(l => l.type === "max").value !='' ? row.find(l => l.type === "max").value : 0
@@ -137,11 +178,11 @@ async function saveRowRoDB(row,index){
         [parseFloat(value)],
         [parseFloat(percent)]
     ]
-    con.query(sql, [values], function(error, result) {
+    connection.query(sql, [values], function(error, result) {
         if (error) {
             console.log(error)
         }
-        con.end()
+        //connection.end()
 
         console.log(result)
     });
@@ -204,49 +245,168 @@ async function readCSV() {
             }
             console.log(arr);
 
-            var con = mysql.createConnection({
-                host: "mariadb105.server179088.nazwa.pl",
-                user: "server179088_raportyBL",
-                password: process.env.DATABASE_PASSWORD,
-                database: "server179088_raportyBL"
-            });
+            handleDisconnect()
 
             var truncateSQL = 'TRUNCATE ProductsAllegro'
 
-            let truncate = await con.awaitQuery(truncateSQL)
+            let truncate = await connection.awaitQuery(truncateSQL)
 
 
             var sql = "INSERT IGNORE INTO ProductsAllegro(ProductID,CategoryID) VALUES ?"
 
-            con.query(sql, [arr], function(error, result) {
+            connection.query(sql, [arr], function(error, result) {
                 if (error) {
                     console.log(error)
                 }
-                con.end()
 
                 console.log("Zapisano nowe dane z pliku CSV do bazy danych")
             });
         });
 
 }
+
+async function calculatePresta(){
+
+    let wholedata = []
+    
+
+    for (let index = 0; index < 120 ; index++) {
+        
+        await new Promise(r => setTimeout(r, 1000));
+
+            wholedata = []
+
+            let params = {
+                "inventory_id": 38747,
+                "page": index + 1
+            };
+        
+            let data = {
+                'method': 'getInventoryProductsList',
+                'parameters': JSON.stringify(params)
+            };
+        
+        
+            let res = await axios
+                .post('https://api.baselinker.com/connector.php', data, {
+                    headers: {
+                        "X-BLToken": process.env.BASELINKER_API_KEY,
+                        'Content-Type': 'multipart/form-data'
+                    }
+                })
+            
+            
+
+
+                if(Object.keys(res.data.products) !== undefined )
+                {
+                    Object.keys(res.data.products).forEach(element => {
+
+                        let iterator = res.data.products[element]
+    
+                        
+                            let price = 0;
+        
+                            for (const el of periodsData) {
+                                if(iterator.prices[4494] < el.max)
+                                {
+                                    let basicprice = parseFloat(iterator.prices[4494]);
+                                                        
+                                    let myMargin = parseFloat(el.value) + basicprice * (el.percent / 100)        
+                                    
+                                    let prestaMargin = parseFloat(basicprice * (1/100))
+                                    price = parseFloat(basicprice + myMargin + prestaMargin).toFixed(2)
+                                    //priceAllegro = parseFloat(basicprice * 1.3 + myMargin)
+                                    break;
+                                }
+                            }
+           
+        
+                            console.log("id:",iterator.id)
+
+                            
+
+                            wholedata.push(new Object({
+                                productID: iterator.id,
+                                pricePresta :  roundTo99(price),
+                               // priceAllegro : roundTo99(priceAllegro)
+                            }))
+                                   
+                        
+                    });
+                }
+
+                console.log(wholedata)
+                
+
+                await updatePrestaPrice(wholedata)
+               
+    }
+
+    
+
+}
+
+function roundTo99(price){
+    let x = price = Math.ceil(price) - 0.01;
+
+    return x;
+}
+
+
+async function updatePrestaPrice(wholedata)
+{
+    let products = {}
+    for (let index = 0; index < wholedata.length; index++) {
+
+        let productData = {
+           // '38716': wholedata[index].priceAllegro,
+            '38715': wholedata[index].pricePresta
+        }
+
+        products[wholedata[index].productID] = productData
+    }
+
+
+
+    console.log(wholedata)
+
+    let params = {
+        "inventory_id": 38747,
+        "products": products
+    };
+
+    let data = {
+        'method': 'updateInventoryProductsPrices',
+        'parameters': JSON.stringify(params)
+    };
+
+
+    let respo = await axios
+        .post('https://api.baselinker.com/connector.php', data, {
+            headers: {
+                "X-BLToken": process.env.BASELINKER_API_KEY,
+                'Content-Type': 'multipart/form-data'
+            }
+        })
+
+    console.log(respo.data)
+    
+}
+
 async function calculateAndChange() {
 
     // let marginInMultiplicant = (margin / 100);
 
-    var con = mysql.createConnection({
-        host: "mariadb105.server179088.nazwa.pl",
-        user: "server179088_raportyBL",
-        password: process.env.DATABASE_PASSWORD,
-        database: "server179088_raportyBL"
-    });
+    handleDisconnect()
 
     var sql = 'SELECT DISTINCT ProductID, CategoryID FROM `ProductsAllegro`'
 
 
-    let sqlresp = await con.awaitQuery(sql)
+    let sqlresp = await connection.awaitQuery(sql)
 
     let wholedata = []
-    con.end()
+    //connection.end()
     for (let element of sqlresp) {
 
         wholedata.push(new Object({
@@ -305,51 +465,17 @@ async function calculateAndChange() {
                             let myMargin = parseFloat(el.value) + (parseFloat(obj.wholesalerPrice) * (el.percent / 100))                       
                             
                             let allegroMargin = parseFloat(await getMarginFromAllegro(obj.categoryID, basicprice + myMargin))
-                            // console.log("wp:", basicprice)
-                            // console.log("margin:", myMargin)
-                            // console.log("allegroMargin:", allegroMargin)
+                     
+                            let prestaMargin = parseFloat(obj.wholesalerPrice * 1/100)
+                            
                             obj.allegroPrice = parseFloat(basicprice + myMargin + allegroMargin).toFixed(2)
                             
-                            obj.prestaPrice = parseFloat(basicprice + myMargin).toFixed(2)
+                            obj.prestaPrice = parseFloat(basicprice + prestaMargin + myMargin).toFixed(2)
 
                             console.log("index: " + index )
                             break;
                         }
                     }
-
-                    // if (parseFloat(obj.wholesalerPrice) / 1.23 < parseFloat(marginTreshold)) {
-                    //     let basicprice = parseFloat(obj.wholesalerPrice);
-                    //     let myMargin = parseFloat(marginConst)
-                    //     let allegroMargin = parseFloat(await getMarginFromAllegro(obj.categoryID, basicprice + myMargin))
-
-                    //     // console.log("wp:", basicprice)
-                    //     // console.log("margin:", myMargin)
-                    //     // console.log("allegroMargin:", allegroMargin)
-                    //     obj.allegroPrice = parseFloat(basicprice + myMargin + allegroMargin).toFixed(2)
-
-                    //     obj.prestaPrice = parseFloat(basicprice + myMargin).toFixed(2)
-                    //     console.log("Price: " + obj.allegroPrice)
-
-                    // } else {
-
-                    //     let basicprice = parseFloat(obj.wholesalerPrice);
-                    //     let myMargin = parseFloat((obj.wholesalerPrice / 1.23) * marginInMultiplicant)
-                    //     console.log("md:",marginInMultiplicant)
-                    //     let allegroMargin = parseFloat(await getMarginFromAllegro(obj.categoryID, basicprice + myMargin))
-
-                    //     // console.log("wp:", basicprice)
-                    //     // console.log("margin:", myMargin)
-                    //     // console.log("allegroMargin:", allegroMargin)
-                    //     obj.allegroPrice = parseFloat(basicprice + myMargin + allegroMargin).toFixed(2)
-
-                    //     obj.prestaPrice = parseFloat(basicprice + myMargin).toFixed(2)
-
-
-
-
-
-                    //     console.log("Price: " + obj.allegroPrice)
-                    // }
 
                 }
             }
@@ -364,18 +490,20 @@ async function calculateAndChange() {
 
 }
 
+
+
 async function updateBaselinkerPrices(wholedata) {
 
     let products = {}
     for (let index = 0; index < wholedata.length; index++) {
         let productData = {
-            '38716': wholedata[index].allegroPrice,
-            '38715': wholedata[index].prestaPrice
+            '38716':roundTo99(wholedata[index].allegroPrice),
+            '38715':roundTo99(wholedata[index].prestaPrice)
         }
         products[wholedata[index].productID] = productData
     }
 
-    console.log(products)
+    //console.log(products)
 
     let params = {
         "inventory_id": 38747,
@@ -613,16 +741,11 @@ async function refreshTokenfun() {
 
 async function saveLoginData(access_tokenx, refreshTokenx) {
 
-    var con = mysql.createConnection({
-        host: "mariadb105.server179088.nazwa.pl",
-        user: "server179088_raportyBL",
-        password: process.env.DATABASE_PASSWORD,
-        database: "server179088_raportyBL"
-    });
+    handleDisconnect()
 
     var truncateSQL = 'TRUNCATE AccessData'
 
-    let truncate = await con.awaitQuery(truncateSQL)
+    let truncate = await connection.awaitQuery(truncateSQL)
 
 
     var sql = "INSERT INTO AccessData(id,access_token,refresh_token,client_id,client_secret) VALUES (?)"
@@ -633,32 +756,28 @@ async function saveLoginData(access_tokenx, refreshTokenx) {
         [clientID],
         [clientSecret]
     ]
-    con.query(sql, [values], function(error, result) {
+    connection.query(sql, [values], function(error, result) {
         if (error) {
             console.log(error)
         }
-        con.end()
+        //connection.end()
 
         console.log(result)
     });
 
+
 }
 
 async function updateLoginData() {
-    var con = mysql.createConnection({
-        host: "mariadb105.server179088.nazwa.pl",
-        user: "server179088_raportyBL",
-        password: process.env.DATABASE_PASSWORD,
-        database: "server179088_raportyBL"
-    });
+    handleDisconnect()
     var sql = "select refresh_token, access_token from AccessData where id = 1"
 
-    let sql_result = await con.awaitQuery(sql)
+    let sql_result = await connection.awaitQuery(sql)
 
     refreshToken = sql_result[0].refresh_token
     access_token = sql_result[0].access_token
 
-    con.end()
+    //connection.end()
 
 
 }
