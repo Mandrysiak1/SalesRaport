@@ -8,7 +8,7 @@ var bodyParser = require('body-parser')
 
 
 
-require('dotenv').config({ path: './crid.env' })
+require('dotenv').config({ path: __dirname + '/crid.env' })
 
 app.set('view engine', 'ejs');
 app.use(express.static(__dirname + '/assets'));

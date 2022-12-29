@@ -115,7 +115,7 @@ router.get('/updatePresta', async (req, res) => {
 router.get('/prowizje', async (req, res) => {
 
     await getConfiguration()
-    res.render('index', {
+    res.render('/var/www/nodeapp/views/index.ejs', {
         data: periodsData
     });
 
