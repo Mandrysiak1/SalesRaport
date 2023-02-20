@@ -19,18 +19,18 @@ function handleDisconnect() {
     password: process.env.DATABASE_PASSWORD,
     database: "server179088_raportyBL"
   }); // Recreate the connection, since
-                                                  // the old one cannot be reused.
+  // the old one cannot be reused.
 
-  connection.connect(function(err) {              // The server is either down
-    if(err) {                                     // or restarting (takes a while sometimes).
+  connection.connect(function (err) {              // The server is either down
+    if (err) {                                     // or restarting (takes a while sometimes).
       console.log('error when connecting to db:', err);
       setTimeout(handleDisconnect, 2000); // We introduce a delay before attempting to reconnect,
     }                                     // to avoid a hot loop, and to allow our node script to
   });                                     // process asynchronous requests in the meantime.
-                                          // If you're also serving http, display a 503 error.
-  connection.on('error', function(err) {
+  // If you're also serving http, display a 503 error.
+  connection.on('error', function (err) {
     console.log('db error', err);
-    if(err.code === 'PROTOCOL_CONNECTION_LOST') { // Connection to the MySQL server is usually
+    if (err.code === 'PROTOCOL_CONNECTION_LOST') { // Connection to the MySQL server is usually
       handleDisconnect();                         // lost due to either server restart, or a
     } else {                                      // connnection idle timeout (the wait_timeout
       throw err;                                  // server variable configures this)
@@ -58,7 +58,7 @@ router.post('/get', async (req, res) => {
   });
 
 
-  
+
 
   var d = new Date();
   d.setDate(d.getDate() - raportDays);
@@ -91,7 +91,7 @@ router.post('/get', async (req, res) => {
       obj.product_id = product.product_id
       obj.timestamp = 0;
       obj.timestamp = await getLastPurchase(product.product_id, connection)
-      
+
       selectedProducts.push(obj)
     }
   }
@@ -138,11 +138,11 @@ router.post('/get', async (req, res) => {
         if (res.data.products[element_res.product_id]) {
 
           allProducts.push(element_res)
-                                             
-          if (element_res.total > res.data.products[element_res.product_id].stock.bl_5662
-             && !selectedProducts.some(item => (item.product_id.toString() === element_res.product_id.toString())) ) {
 
-              selectedProducts.push(element_res)
+          if (element_res.total > res.data.products[element_res.product_id].stock.bl_5662
+            && !selectedProducts.some(item => (item.product_id.toString() === element_res.product_id.toString()))) {
+
+            selectedProducts.push(element_res)
 
           }
         }
@@ -198,44 +198,43 @@ router.post('/get', async (req, res) => {
           let isActive = res.data.products[element.product_id].text_fields.extra_field_4588
           let isBundle = res.data.products[element.product_id].text_fields.extra_field_4690
 
-          if(isBundle != null && isActive !=null)
-          {
+          if (isBundle != null && isActive != null) {
             if (isActive.toLowerCase() === "tak" && isBundle.toLowerCase() === "nie") {
               let product_name = res.data.products[element.product_id].text_fields.name
               let sku = res.data.products[element.product_id].sku
               let ean = res.data.products[element.product_id].ean
               let temp_timestamp = element.timestamp
-  
+
               temp_timestamp = temp_timestamp === null ? 0 : temp_timestamp;
-  
+
               let timestamp = 0
               if (temp_timestamp != 0) {
                 let a = new Date(temp_timestamp * 1000)
-  
+
                 var month = ((a.getUTCMonth() + 1) < 10 ? '0' : '') + (a.getUTCMonth() + 1); //months from 1-12
                 var day = ((a.getUTCDate()) < 10 ? '0' : '') + a.getUTCDate()
-  
+
                 var year = a.getUTCFullYear();
                 timestamp = day + "." + month + "." + year;
               } else {
                 timestamp = "przed 08.05.2022"
               }
-  
+
               let sold = 0
-  
+
               sql_result.forEach(el => {
-  
+
                 if (el.product_id == element.product_id) {
                   sold = el.total
                 }
               })
-  
+
               let in_stock = res.data.products[element.product_id].stock.bl_5662
               let price = res.data.products[element.product_id].prices[4494]
               let buy_price = (Number.parseFloat(res.data.products[element.product_id].text_fields.extra_field_5072)).toFixed(2)
               let margin = ((price - buy_price * 1.23) / price * 100).toFixed(2);
               let vendor = res.data.products[element.product_id].text_fields.extra_field_4240
-  
+
               let arr = []
               arr = [product_name, sku + "\n" + ean, sold, in_stock, price, buy_price, margin, vendor, timestamp]
               dataArrSelected.push(arr)
@@ -243,7 +242,7 @@ router.post('/get', async (req, res) => {
               // console.log(product_name = res.data.products[element.product_id].text_fields.name + " isActive: " + isActive)
             }
           }
-        
+
 
         }
       })
@@ -253,12 +252,11 @@ router.post('/get', async (req, res) => {
       dataArrSelected.forEach(row => {
         console.log(row)
 
-        if(row[7] !== undefined)
-        {
+        if (row[7] !== undefined) {
           if (!vendorArr.includes(row[7].toLowerCase())) {
             vendorArr.push(row[7].toLowerCase())
           }
-        }else{
+        } else {
           if (!vendorArr.includes("nieznany")) {
             vendorArr.push("nieznany")
             row[7] = "nieznany";
@@ -407,6 +405,7 @@ function sendMail(attachments) {
   var maillist = [
     'andrysiakmaciejj@gmail.com',
     'akrzypkowska@kubartech.pl',
+    'family24.akrzypkowska@gmail.com',
     'gkrzypkowski@kubartech.pl'
   ];
 
@@ -576,7 +575,7 @@ async function asyncCall(index, con) {
 
 async function processGet() {
 
-handleDisconnect()
+  handleDisconnect()
 
   for (let index = 0; index < 12 * 30 * 7; index++) {
     await asyncCall(index, connection)

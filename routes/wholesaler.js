@@ -41,29 +41,29 @@ var periodsData;
 var connection;
 
 function handleDisconnect() {
-  connection = mysql.createConnection({
-    host: "mariadb105.server179088.nazwa.pl",
-    user: "server179088_raportyBL",
-    password: process.env.DATABASE_PASSWORD,
-    database: "server179088_raportyBL"
-  }); // Recreate the connection, since
-                                                  // the old one cannot be reused.
+    connection = mysql.createConnection({
+        host: "mariadb105.server179088.nazwa.pl",
+        user: "server179088_raportyBL",
+        password: process.env.DATABASE_PASSWORD,
+        database: "server179088_raportyBL"
+    }); // Recreate the connection, since
+    // the old one cannot be reused.
 
-  connection.connect(function(err) {              // The server is either down
-    if(err) {                                     // or restarting (takes a while sometimes).
-      console.log('error when connecting to db:', err);
-      setTimeout(handleDisconnect, 2000); // We introduce a delay before attempting to reconnect,
-    }                                     // to avoid a hot loop, and to allow our node script to
-  });                                     // process asynchronous requests in the meantime.
-                                          // If you're also serving http, display a 503 error.
-  connection.on('error', function(err) {
-    console.log('db error', err);
-    if(err.code === 'PROTOCOL_CONNECTION_LOST') { // Connection to the MySQL server is usually
-      handleDisconnect();                         // lost due to either server restart, or a
-    } else {                                      // connnection idle timeout (the wait_timeout
-      throw err;                                  // server variable configures this)
-    }
-  });
+    connection.connect(function (err) {              // The server is either down
+        if (err) {                                     // or restarting (takes a while sometimes).
+            console.log('error when connecting to db:', err);
+            setTimeout(handleDisconnect, 2000); // We introduce a delay before attempting to reconnect,
+        }                                     // to avoid a hot loop, and to allow our node script to
+    });                                     // process asynchronous requests in the meantime.
+    // If you're also serving http, display a 503 error.
+    connection.on('error', function (err) {
+        console.log('db error', err);
+        if (err.code === 'PROTOCOL_CONNECTION_LOST') { // Connection to the MySQL server is usually
+            handleDisconnect();                         // lost due to either server restart, or a
+        } else {                                      // connnection idle timeout (the wait_timeout
+            throw err;                                  // server variable configures this)
+        }
+    });
 }
 
 
@@ -118,7 +118,16 @@ router.get('/prowizje', async (req, res) => {
     res.render('/var/www/nodeapp/views/index.ejs', {
         data: periodsData
     });
+    // try {
+    //     res.render('index.ejs', {
+    //         data: periodsData
+    //     });
 
+    // } catch (exception) {
+    //     res.render('/views/index.ejs', {
+    //         data: periodsData
+    //     });
+    // }
 })
 
 async function getConfiguration() {
@@ -138,7 +147,7 @@ router.post('/setConfiguration', async (req, res) => {
 
     handleDisconnect()
 
- 
+
 
     // console.log(req.body.data)
 
@@ -148,8 +157,8 @@ router.post('/setConfiguration', async (req, res) => {
     let index = 0
     console.log('dostalem do zapisania:', req.body.data);
     for (const element of req.body.data) {
-       // console.log(element)
-         await saveRowRoDB(element,index)
+        // console.log(element)
+        await saveRowRoDB(element, index)
         index++
 
     }
@@ -161,14 +170,14 @@ router.post('/setConfiguration', async (req, res) => {
 
 })
 
-async function saveRowRoDB(row,index){
+async function saveRowRoDB(row, index) {
 
     handleDisconnect()
 
-    let min = row.find(l => l.type === "min").value !='' ? row.find(l => l.type === "min").value : 0
-    let max = row.find(l => l.type === "max").value !='' ? row.find(l => l.type === "max").value : 0
-    let value = row.find(l => l.type === "value").value !='' ? row.find(l => l.type === "value").value : 0
-    let percent = row.find(l => l.type === "percent").value !='' ? row.find(l => l.type === "percent").value : 0
+    let min = row.find(l => l.type === "min").value != '' ? row.find(l => l.type === "min").value : 0
+    let max = row.find(l => l.type === "max").value != '' ? row.find(l => l.type === "max").value : 0
+    let value = row.find(l => l.type === "value").value != '' ? row.find(l => l.type === "value").value : 0
+    let percent = row.find(l => l.type === "percent").value != '' ? row.find(l => l.type === "percent").value : 0
 
     var sql = "INSERT INTO ConfigurationTable(id,min,max,value,percent) VALUES (?)"
     var values = [
@@ -178,7 +187,7 @@ async function saveRowRoDB(row,index){
         [parseFloat(value)],
         [parseFloat(percent)]
     ]
-    connection.query(sql, [values], function(error, result) {
+    connection.query(sql, [values], function (error, result) {
         if (error) {
             console.log(error)
         }
@@ -197,7 +206,7 @@ async function getCSV() {
     let url = 'https://panel-d.baselinker.com/offers_export.php?hash=3013293029fa3b612a3311b4273b4c603185a32' //trwające
     let url1 = 'https://panel-d.baselinker.com/offers_export.php?hash=301329362d7938604a74e6eb2dd16f590338daa' //trwające
     let url2 = 'https://panel-d.baselinker.com/offers_export.php?hash=30132936f2a9330fda52095dca33b55946dd532' //trwające
-    
+
     let urls = []
     urls.push(url)
     urls.push(url1)
@@ -219,7 +228,7 @@ async function getCSV() {
                 resolve()
             })
         })
-        
+
 
     })
 
@@ -254,7 +263,7 @@ async function readCSV() {
 
             var sql = "INSERT IGNORE INTO ProductsAllegro(ProductID,CategoryID) VALUES ?"
 
-            connection.query(sql, [arr], function(error, result) {
+            connection.query(sql, [arr], function (error, result) {
                 if (error) {
                     console.log(error)
                 }
@@ -265,102 +274,99 @@ async function readCSV() {
 
 }
 
-async function calculatePresta(){
+async function calculatePresta() {
 
     let wholedata = []
-    
 
-    for (let index = 0; index < 120 ; index++) {
-        
+
+    for (let index = 0; index < 120; index++) {
+
         await new Promise(r => setTimeout(r, 1000));
 
-            wholedata = []
+        wholedata = []
 
-            let params = {
-                "inventory_id": 38747,
-                "page": index + 1
-            };
-        
-            let data = {
-                'method': 'getInventoryProductsList',
-                'parameters': JSON.stringify(params)
-            };
-        
-        
-            let res = await axios
-                .post('https://api.baselinker.com/connector.php', data, {
-                    headers: {
-                        "X-BLToken": process.env.BASELINKER_API_KEY,
-                        'Content-Type': 'multipart/form-data'
+        let params = {
+            "inventory_id": 38747,
+            "page": index + 1
+        };
+
+        let data = {
+            'method': 'getInventoryProductsList',
+            'parameters': JSON.stringify(params)
+        };
+
+
+        let res = await axios
+            .post('https://api.baselinker.com/connector.php', data, {
+                headers: {
+                    "X-BLToken": process.env.BASELINKER_API_KEY,
+                    'Content-Type': 'multipart/form-data'
+                }
+            })
+
+
+
+
+        if (Object.keys(res.data.products) !== undefined) {
+            Object.keys(res.data.products).forEach(element => {
+
+                let iterator = res.data.products[element]
+
+
+                let price = 0;
+
+                for (const el of periodsData) {
+                    if (iterator.prices[4494] < el.max) {
+                        let basicprice = parseFloat(iterator.prices[4494]);
+
+                        let myMargin = parseFloat(el.value) + basicprice * (el.percent / 100)
+
+                        let prestaMargin = parseFloat(basicprice * (1 / 100))
+                        price = parseFloat(basicprice + myMargin + prestaMargin).toFixed(2)
+                        //priceAllegro = parseFloat(basicprice * 1.3 + myMargin)
+                        break;
                     }
-                })
-            
-            
-
-
-                if(Object.keys(res.data.products) !== undefined )
-                {
-                    Object.keys(res.data.products).forEach(element => {
-
-                        let iterator = res.data.products[element]
-    
-                        
-                            let price = 0;
-        
-                            for (const el of periodsData) {
-                                if(iterator.prices[4494] < el.max)
-                                {
-                                    let basicprice = parseFloat(iterator.prices[4494]);
-                                                        
-                                    let myMargin = parseFloat(el.value) + basicprice * (el.percent / 100)        
-                                    
-                                    let prestaMargin = parseFloat(basicprice * (1/100))
-                                    price = parseFloat(basicprice + myMargin + prestaMargin).toFixed(2)
-                                    //priceAllegro = parseFloat(basicprice * 1.3 + myMargin)
-                                    break;
-                                }
-                            }
-           
-        
-                            console.log("id:",iterator.id)
-
-                            
-
-                            wholedata.push(new Object({
-                                productID: iterator.id,
-                                pricePresta :  roundTo99(price),
-                               // priceAllegro : roundTo99(priceAllegro)
-                            }))
-                                   
-                        
-                    });
                 }
 
-                console.log(wholedata)
-                
 
-                await updatePrestaPrice(wholedata)
-               
+                console.log("id:", iterator.id)
+
+
+
+                wholedata.push(new Object({
+                    productID: iterator.id,
+                    pricePresta: roundTo99(price),
+                    // priceAllegro : roundTo99(priceAllegro)
+                }))
+
+
+            });
+        }
+
+        console.log(wholedata)
+
+
+        await updatePrestaPrice(wholedata)
+
     }
 
-    
+
 
 }
 
-function roundTo99(price){
+function roundTo99(price) {
     let x = price = Math.ceil(price) - 0.01;
 
     return x;
 }
 
 
-async function updatePrestaPrice(wholedata)
-{
+async function updatePrestaPrice(wholedata) {
     let products = {}
     for (let index = 0; index < wholedata.length; index++) {
 
         let productData = {
-           // '38716': wholedata[index].priceAllegro,
+            // '38716': wholedata[index].priceAllegro,
             '38715': wholedata[index].pricePresta
         }
 
@@ -391,7 +397,7 @@ async function updatePrestaPrice(wholedata)
         })
 
     console.log(respo.data)
-    
+
 }
 
 async function calculateAndChange() {
@@ -458,21 +464,20 @@ async function calculateAndChange() {
                     index++;
 
                     for (const el of periodsData) {
-                        if(parseFloat(obj.wholesalerPrice) < el.max)
-                        {
+                        if (parseFloat(obj.wholesalerPrice) < el.max) {
                             let basicprice = parseFloat(obj.wholesalerPrice);
-                                                      
-                            let myMargin = parseFloat(el.value) + (parseFloat(obj.wholesalerPrice) * (el.percent / 100))                       
-                            
+
+                            let myMargin = parseFloat(el.value) + (parseFloat(obj.wholesalerPrice) * (el.percent / 100))
+
                             let allegroMargin = parseFloat(await getMarginFromAllegro(obj.categoryID, basicprice + myMargin))
-                     
-                            let prestaMargin = parseFloat(obj.wholesalerPrice * 1/100)
-                            
+
+                            let prestaMargin = parseFloat(obj.wholesalerPrice * 1 / 100)
+
                             obj.allegroPrice = parseFloat(basicprice + myMargin + allegroMargin).toFixed(2)
-                            
+
                             obj.prestaPrice = parseFloat(basicprice + prestaMargin + myMargin).toFixed(2)
 
-                            console.log("index: " + index )
+                            console.log("index: " + index)
                             break;
                         }
                     }
@@ -497,8 +502,8 @@ async function updateBaselinkerPrices(wholedata) {
     let products = {}
     for (let index = 0; index < wholedata.length; index++) {
         let productData = {
-            '38716':roundTo99(wholedata[index].allegroPrice),
-            '38715':roundTo99(wholedata[index].prestaPrice)
+            '38716': roundTo99(wholedata[index].allegroPrice),
+            '38715': roundTo99(wholedata[index].prestaPrice)
         }
         products[wholedata[index].productID] = productData
     }
@@ -541,61 +546,61 @@ async function getMarginFromAllegro(categoryID, offerValue) {
                     },
                     "product": null,
                     "parameters": [{
-                            "id": "11323",
-                            "valuesIds": [
-                                "11323_246514"
-                            ],
-                            "values": [],
-                            "rangeValue": null
-                        },
-                        {
-                            "id": "223489",
-                            "valuesIds": [],
-                            "values": [
-                                "Autor"
-                            ],
-                            "rangeValue": null
-                        },
-                        {
-                            "id": "223541",
-                            "valuesIds": [
-                                "223541_491585"
-                            ],
-                            "values": [],
-                            "rangeValue": null
-                        },
-                        {
-                            "id": "223545",
-                            "valuesIds": [],
-                            "values": [
-                                "Sample"
-                            ],
-                            "rangeValue": null
-                        },
-                        {
-                            "id": "245669",
-                            "valuesIds": [],
-                            "values": [
-                                "9780000000057"
-                            ],
-                            "rangeValue": null
-                        },
-                        {
-                            "id": "74",
-                            "valuesIds": [],
-                            "values": [
-                                "2015"
-                            ],
-                            "rangeValue": null
-                        },
-                        {
-                            "id": "7773",
-                            "valuesIds": [
-                                "7773_2"
-                            ],
-                            "values": [],
-                            "rangeValue": null
-                        }
+                        "id": "11323",
+                        "valuesIds": [
+                            "11323_246514"
+                        ],
+                        "values": [],
+                        "rangeValue": null
+                    },
+                    {
+                        "id": "223489",
+                        "valuesIds": [],
+                        "values": [
+                            "Autor"
+                        ],
+                        "rangeValue": null
+                    },
+                    {
+                        "id": "223541",
+                        "valuesIds": [
+                            "223541_491585"
+                        ],
+                        "values": [],
+                        "rangeValue": null
+                    },
+                    {
+                        "id": "223545",
+                        "valuesIds": [],
+                        "values": [
+                            "Sample"
+                        ],
+                        "rangeValue": null
+                    },
+                    {
+                        "id": "245669",
+                        "valuesIds": [],
+                        "values": [
+                            "9780000000057"
+                        ],
+                        "rangeValue": null
+                    },
+                    {
+                        "id": "74",
+                        "valuesIds": [],
+                        "values": [
+                            "2015"
+                        ],
+                        "rangeValue": null
+                    },
+                    {
+                        "id": "7773",
+                        "valuesIds": [
+                            "7773_2"
+                        ],
+                        "values": [],
+                        "rangeValue": null
+                    }
                     ],
                     "customParameters": null,
                     "ean": null,
@@ -724,11 +729,11 @@ async function refreshTokenfun() {
         let resp = await axios
             .post('https://allegro.pl/auth/oauth/token?grant_type=refresh_token&refresh_token=' +
                 refreshToken, {}, {
-                    headers: {
-                        Authorization: 'Basic ' + Buffer.from(clientID + ':' + clientSecret).toString('base64'),
-                        'Content-Type': 'application/x-www-form-urlencoded'
-                    }
-                })
+                headers: {
+                    Authorization: 'Basic ' + Buffer.from(clientID + ':' + clientSecret).toString('base64'),
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                }
+            })
 
         console.log(resp.status)
         await saveLoginData(resp.data.access_token, resp.data.refresh_token)
@@ -756,7 +761,7 @@ async function saveLoginData(access_tokenx, refreshTokenx) {
         [clientID],
         [clientSecret]
     ]
-    connection.query(sql, [values], function(error, result) {
+    connection.query(sql, [values], function (error, result) {
         if (error) {
             console.log(error)
         }
@@ -794,7 +799,7 @@ async function login() {
                 Authorization: 'Basic ' + Buffer.from(clientID + ':' + clientSecret).toString('base64'),
                 'Content-Type': 'application/x-www-form-urlencoded'
             }
-        }).then(response => response.json()).then((data) => console.log(data)).catch(function(error) {
+        }).then(response => response.json()).then((data) => console.log(data)).catch(function (error) {
             console.log(error);
         });
 
@@ -816,7 +821,7 @@ async function login2() {
                 Authorization: 'Basic ' + Buffer.from(clientID + ':' + clientSecret).toString('base64'),
                 'Content-Type': 'application/x-www-form-urlencoded'
             }
-        }).then(response => response.json()).then((data) => console.log(data)).catch(function(error) {
+        }).then(response => response.json()).then((data) => console.log(data)).catch(function (error) {
             console.log(error);
         });
 

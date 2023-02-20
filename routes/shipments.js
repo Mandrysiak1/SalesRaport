@@ -1,5 +1,7 @@
 const express = require('express')
 const router = express.Router()
+const fetch = require('node-fetch')
+
 const axios = require('axios')
 const { ConsoleMessage } = require('puppeteer')
 var nodemailer = require('nodemailer');
@@ -16,9 +18,9 @@ router.post('/email', async (req, res) => {
   console.log("req:", req.body)
   let emailTopic = req.body.email.topic
   let emailContent = req.body.email.message
-  
+
   let emailAdresses = req.body.email.receivers
-  
+
   let labelNumbers = req.body.packages
   let orderId = req.body.orderId
   let moveToCategory = req.body.email.moveToCategory
@@ -32,12 +34,12 @@ router.post('/email', async (req, res) => {
     res.json({ status: "ERROR" })
   } else {
 
-    var response  = await sendEmail(emailTopic, emailContent, emailAdresses, labels)
-    if(moveToCategory){
+    var response = await sendEmail(emailTopic, emailContent, emailAdresses, labels)
+    if (moveToCategory) {
 
-        await moveOrderToProperCategory(orderId,order_source.orders[0].order_source)
-      }
-      console.log("xd",response)
+      await moveOrderToProperCategory(orderId, order_source.orders[0].order_source)
+    }
+    console.log("xd", response)
     res.json(response)
   }
 
@@ -64,7 +66,6 @@ router.post('/create', async (req, res) => {
 
 
   let resp = await addPackage(orderID, packageSize, dimensions, deliveryMethod, cod, insurance)
-  //let resp = await addPackage("xd", packageSize, dimensions, deliveryMethod, cod, insurance)
   let details = await getOrderPackages(orderID)
 
 
@@ -85,11 +86,139 @@ router.post('/remove', async (req, res) => {
 
   let response = await removePackage(courier_code, package_id, package_number)
 
- 
+
 
   res.json(response);
 
 })
+
+router.get('/inpost', async (req, res) => {
+
+  inpostReturn()
+})
+router.get('/inpost2', async (req, res) => {
+
+  try {
+    await inpostReturn2()
+
+  } catch (error) {
+
+    console.log(error)
+  }
+})
+
+
+async function inpostReturn2() {
+
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+
+      data = {
+        "receiver": {
+          "name": "Family24",
+          "company_name": "Kubartech magazyn B",
+          "first_name": "Aneta",
+          "last_name": "Krzypkowska",
+          "email": "andrysiakmaciejj@gmail.com",
+          "phone": "531108331",
+          "address": {
+            "street": "Częstochowska",
+            "building_number": "15",
+            "city": "Jaskrów",
+            "post_code": "42-244",
+            "country_code": "PL"
+          }
+        },
+        "parcels": [
+          {
+            "id": "small package",
+            "dimensions": {
+              "length": "80",
+              "width": "360",
+              "height": "640",
+              "unit": "mm"
+            },
+            "weight": {
+              "amount": "25",
+              "unit": "kg"
+            },
+            "is_non_standard": false
+          }
+        ], "insurance": {
+          "amount": 25,
+          "currency": "PLN"
+        },
+        "cod": {
+          "amount": 12.50,
+          "currency": "PLN"
+        },
+        "service": "inpost_courier_standard",
+        "additional_services": ["email", "sms"],
+        "reference": "Test",
+        "comments": "dowolny komentarz",
+      }
+
+
+
+
+      try {
+
+        var url = 'https://sandbox-api-shipx-pl.easypack24.net/v1/organizations/38516/shipments'
+
+        fetch(url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + 'eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJkVzROZW9TeXk0OHpCOHg4emdZX2t5dFNiWHY3blZ0eFVGVFpzWV9TUFA4In0.eyJleHAiOjE5OTE5MjI5NjYsImlhdCI6MTY3NjU2Mjk2NiwianRpIjoiNjQ2MzBjNDEtNDlmZS00YWFiLThhZTItMjQxNjUwMTljMTA4IiwiaXNzIjoiaHR0cHM6Ly9zYW5kYm94LWxvZ2luLmlucG9zdC5wbC9hdXRoL3JlYWxtcy9leHRlcm5hbCIsInN1YiI6ImY6N2ZiZjQxYmEtYTEzZC00MGQzLTk1ZjYtOThhMmIxYmFlNjdiOl9wck5PeFhNdnVZcHBBQjduQW9YLWROQVpWTFV4VUJ0SFlHMk5nUHNWQnciLCJ0eXAiOiJCZWFyZXIiLCJhenAiOiJzaGlweCIsInNlc3Npb25fc3RhdGUiOiI1ZWVlNjhmYi01MGNlLTRiZjctOTYwMi04NmRiNzc1MzYwYmUiLCJzY29wZSI6Im9wZW5pZCBhcGk6YXBpcG9pbnRzIGFwaTpzaGlweCIsInNpZCI6IjVlZWU2OGZiLTUwY2UtNGJmNy05NjAyLTg2ZGI3NzUzNjBiZSIsImFsbG93ZWRfcmVmZXJyZXJzIjoiIiwidXVpZCI6IjcyYWI2ZGI3LWRkMzItNGNjZS1hNDNhLTIyYTdiMjk4YzdjZSIsImVtYWlsIjoiYW5kcnlzaWFrbWFjaWVqakBnbWFpbC5jb20ifQ.EW8ZcBsfvjT-Yuus0zAtT8xCFm3MMMQaObIMVdaEyKI35u1KUObjy1G6NvUIO4tkcqvQL0DkkxQu262_NjIpd1VCg2ozBrHUaCQt1KvXf8neNgYL894jQgY_Kyi8CemMdBzFpFT2q3FGgmsWrAQyY-ihkNnsIdOwwOSrWAzWtxyOkdwwO0Q65c8EcgTLeiWaVsPE802_jxb8vVJzrRKo4vOlXyVQBEBDpNvoAbarOO2kXpmfgxH0ymu6I6QwYukFLdpF1RIogLO7WI6dYKa6_2LcgElxOvNJHknxO16j0nMEnydtc8mPuL7Yv3HTL3SKabp0_UMMOok7iy2ix4uzQg',
+          },
+          body: JSON.stringify(data)
+        }).then((response) => {
+          if (response.status === 200) return response.json();
+          else reject(response)
+        }).then((data) => {
+          console.log("tutaj:" + data.status)
+          resolve(data.id);
+        })
+
+
+      } catch (error) {
+        console.log(error)
+        reject(error)
+      }
+    }, 0);
+  })
+
+}
+
+
+
+async function inpostReturn() {
+
+  try {
+
+    var url = 'https://sandbox-api-shipx-pl.easypack24.net/v1/organizations/38516/shipments?created_at_gteq=2023-02-16T14:10+01:00'
+
+    fetch(url, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + 'eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJkVzROZW9TeXk0OHpCOHg4emdZX2t5dFNiWHY3blZ0eFVGVFpzWV9TUFA4In0.eyJleHAiOjE5OTE5MjI5NjYsImlhdCI6MTY3NjU2Mjk2NiwianRpIjoiNjQ2MzBjNDEtNDlmZS00YWFiLThhZTItMjQxNjUwMTljMTA4IiwiaXNzIjoiaHR0cHM6Ly9zYW5kYm94LWxvZ2luLmlucG9zdC5wbC9hdXRoL3JlYWxtcy9leHRlcm5hbCIsInN1YiI6ImY6N2ZiZjQxYmEtYTEzZC00MGQzLTk1ZjYtOThhMmIxYmFlNjdiOl9wck5PeFhNdnVZcHBBQjduQW9YLWROQVpWTFV4VUJ0SFlHMk5nUHNWQnciLCJ0eXAiOiJCZWFyZXIiLCJhenAiOiJzaGlweCIsInNlc3Npb25fc3RhdGUiOiI1ZWVlNjhmYi01MGNlLTRiZjctOTYwMi04NmRiNzc1MzYwYmUiLCJzY29wZSI6Im9wZW5pZCBhcGk6YXBpcG9pbnRzIGFwaTpzaGlweCIsInNpZCI6IjVlZWU2OGZiLTUwY2UtNGJmNy05NjAyLTg2ZGI3NzUzNjBiZSIsImFsbG93ZWRfcmVmZXJyZXJzIjoiIiwidXVpZCI6IjcyYWI2ZGI3LWRkMzItNGNjZS1hNDNhLTIyYTdiMjk4YzdjZSIsImVtYWlsIjoiYW5kcnlzaWFrbWFjaWVqakBnbWFpbC5jb20ifQ.EW8ZcBsfvjT-Yuus0zAtT8xCFm3MMMQaObIMVdaEyKI35u1KUObjy1G6NvUIO4tkcqvQL0DkkxQu262_NjIpd1VCg2ozBrHUaCQt1KvXf8neNgYL894jQgY_Kyi8CemMdBzFpFT2q3FGgmsWrAQyY-ihkNnsIdOwwOSrWAzWtxyOkdwwO0Q65c8EcgTLeiWaVsPE802_jxb8vVJzrRKo4vOlXyVQBEBDpNvoAbarOO2kXpmfgxH0ymu6I6QwYukFLdpF1RIogLO7WI6dYKa6_2LcgElxOvNJHknxO16j0nMEnydtc8mPuL7Yv3HTL3SKabp0_UMMOok7iy2ix4uzQg',
+      },
+      //body: JSON.stringify(data)
+    }).then((response) => {
+      return response.json();
+
+    }).then((data) => {
+      console.log(data)
+    })
+
+
+  } catch (error) {
+    console.log(error)
+  }
+}
+
+
 
 
 async function addPackage(orderID, packageSize, dimensions, deliveryMethod, cod, insurance) {
@@ -205,7 +334,7 @@ async function sendInpostPaczkomat(orderID, packageSize, cod, insurance) {
   var res = await axios
     .post('https://api.baselinker.com/connector.php', data, { headers: { "X-BLToken": process.env.BASELINKER_API_KEY, 'Content-Type': 'multipart/form-data' } })
 
-    console.log("Create Package res: " + res.data)
+  console.log("Create Package res: " + res.data)
 
   return res.data.status === 'SUCCESS' ?
     {
@@ -256,7 +385,7 @@ async function sendInpostCourier(orderID, dimensions, cod, insurance) {
   var res = await axios
     .post('https://api.baselinker.com/connector.php', data, { headers: { "X-BLToken": process.env.BASELINKER_API_KEY, 'Content-Type': 'multipart/form-data' } })
 
-    console.log("Create Package res: " + res.data)
+  console.log("Create Package res: " + res.data)
 
   return res.data.status === 'SUCCESS' ?
     {
@@ -313,7 +442,7 @@ async function sendAllegroCourier(orderID, deliveryMethod, dimensions, cod, insu
   var res = await axios
     .post('https://api.baselinker.com/connector.php', data, { headers: { "X-BLToken": process.env.BASELINKER_API_KEY, 'Content-Type': 'multipart/form-data' } })
 
-    console.log("Create Package res: " + res.data)
+  console.log("Create Package res: " + res.data)
 
   return res.data.status === 'SUCCESS' ?
     {
@@ -433,8 +562,8 @@ async function sendEmail(emailTopic, emailContent, emailAdresses, labels) {
   emailAdresses.push('andrysiakmaciejj@gmail.com')
   var maillist = emailAdresses
 
- 
-  try{
+
+  try {
     var mailOptions = {
       from: 'kontaktkubartech@gmail.com',
       to: maillist,
@@ -442,29 +571,27 @@ async function sendEmail(emailTopic, emailContent, emailAdresses, labels) {
       text: emailContent,
       attachments: attachments
     };
-  
-      var x = await mail.sendMail(mailOptions);
- 
-      return {status: "success"}
 
-  }catch(error)
-  {
-    return {status: "error"}
+    var x = await mail.sendMail(mailOptions);
+
+    return { status: "success" }
+
+  } catch (error) {
+    return { status: "error" }
   }
 
-  
+
 
 
 
 }
 
-function prepEmailContent(order_source){
+function prepEmailContent(order_source) {
   let string = '\n\n\nLISTA WYSYŁKOWA\n'
 
-  for(let i = 0; i < order_source.orders[0].products.length; i++)
-  {
+  for (let i = 0; i < order_source.orders[0].products.length; i++) {
     let index = i + 1
-    string = string +"\n" +index + ". " + order_source.orders[0].products[i].name +", EAN: " + order_source.orders[0].products[i].ean + ', ILOŚĆ: ' + order_source.orders[0].products[i].quantity
+    string = string + "\n" + index + ". " + order_source.orders[0].products[i].name + ", EAN: " + order_source.orders[0].products[i].ean + ', ILOŚĆ: ' + order_source.orders[0].products[i].quantity
   }
   return string
 
