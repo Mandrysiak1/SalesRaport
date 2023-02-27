@@ -115,19 +115,19 @@ router.get('/updatePresta', async (req, res) => {
 router.get('/prowizje', async (req, res) => {
 
     await getConfiguration()
-    res.render('/var/www/nodeapp/views/index.ejs', {
-        data: periodsData
-    });
-    // try {
-    //     res.render('index.ejs', {
-    //         data: periodsData
-    //     });
+    // res.render('/var/www/nodeapp/views/index.ejs', {
+    //     data: periodsData
+    // });
+    try {
+        res.render('index.ejs', {
+            data: periodsData
+        });
 
-    // } catch (exception) {
-    //     res.render('/views/index.ejs', {
-    //         data: periodsData
-    //     });
-    // }
+    } catch (exception) {
+        res.render('/views/index.ejs', {
+            data: periodsData
+        });
+    }
 })
 
 async function getConfiguration() {
