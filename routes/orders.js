@@ -388,7 +388,7 @@ router.get('/add', (req, res) => {
 function sendMail(attachments) {
   var dateObj = new Date();
 
-  var month = ((dateObj.getUTCMonth() + 1) < 10 ? '0' : '') + dateObj.getUTCMonth(); //months from 1-12
+  var month = ((dateObj.getUTCMonth() + 1) < 10 ? '0' : '') + (dateObj.getUTCMonth() + 1); //months from 1-12
   var day = ((dateObj.getUTCDate()) < 10 ? '0' : '') + dateObj.getUTCDate()
 
   var year = dateObj.getUTCFullYear();
