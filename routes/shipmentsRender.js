@@ -67,7 +67,7 @@ try {
 
 
   let insuranceValue = getRawInsuranceValue(orderDetails)
-   res.render('/var/www/nodeapp/views/shipments.ejs', {
+   res.render('/home/boss/kubart_sr/views/shipments.ejs', {
     orderDetails: orderDetails.orders[0],
     defaultShipmentMethod : getDefaultShipmentMethod(orderDetails),
     insurance: insuranceValue,
