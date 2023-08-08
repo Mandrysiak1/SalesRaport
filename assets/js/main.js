@@ -78,7 +78,7 @@ async function deletePackage(packageId) {
 
     
     console.log(packageData);
-    const response = await fetch('/shipments/remove', {
+    const response = await fetch('/8080/shipments/remove', {
         method: 'POST',
         body: JSON.stringify(packageData),
         headers: {
@@ -190,7 +190,7 @@ async function sendEmail() {
     }
     //console.log(state);
 
-    const response = await fetch('/shipments/email', {
+    const response = await fetch('/8080/shipments/email', {
         method: 'POST',
         body: JSON.stringify(state),
         headers: {
@@ -269,7 +269,7 @@ async function createPackage()
     let preloader = document.getElementById('package-preloader');
     preloader.style.display = "inline-block";
 
-    const response = await fetch('/shipments/create', {
+    const response = await fetch('/8080/shipments/create', {
         method: 'POST',
         body: JSON.stringify(state),
         headers: {
