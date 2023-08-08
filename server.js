@@ -6,9 +6,11 @@ const open = require('open')
 
 var bodyParser = require('body-parser')
 
+const cors = require('cors');
 
 
 require('dotenv').config({ path: __dirname + '/crid.env' })
+app.use(cors())
 
 app.set('view engine', 'ejs');
 app.use(express.static(__dirname + '/assets'));
