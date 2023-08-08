@@ -20,11 +20,16 @@ app.get('/', async (req, res) => {
 })
 app.use(express.urlencoded());
 
-// app.get('/css/style.css', (req,res) => {
+app.get('/css/style.css', (req,res) => {
 
-//   res.sendFile(__dirname + '/assets/css/style.css');
+  res.sendFile(__dirname + '/assets/css/style.css');
 
-// })
+})
+app.get('/css/main.js', (req,res) => {
+
+  res.sendFile(__dirname + '/assets/css/main.js');
+
+})
 app.get('/raport', (req, res) => {
   res.sendFile(__dirname + '/index.html');
 });
