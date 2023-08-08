@@ -303,7 +303,7 @@ router.post('/get', async (req, res) => {
       console.error(error);
     });
 
-  res.send("OK");
+  res.status(200).json({"message" : "Wygenerowano raport"});
 
 });
 
