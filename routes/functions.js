@@ -222,7 +222,7 @@ function getDefaultShipmentMethod(orderDetails) {
     ) {
       return {
         tab: "allegro",
-        value: "Allegro International Kurier Czechy (zbiorczo)",
+        value: orderDetails.orders[0].delivery_method,
       };
     } else {
       return { tab: "idk", value: "idk_from_allegro" };

@@ -298,7 +298,35 @@ async function createPackages(
       insurance
     );
   } else if (
-    deliveryMethod === "Allegro International Kurier Czechy (zbiorczo)"
+    deliveryMethod === "Allegro International Kurier Czechy pobranie"
+  ) {
+    return await sendAllegroCourier(
+      orderID,
+      deliveryMethod,
+      dimensions,
+      cod,
+      insurance
+    );
+  } else if (
+    deliveryMethod === "Allegro International Automaty Paczkowe Czechy"
+  ) {
+    return await sendAllegroCourier(
+      orderID,
+      deliveryMethod,
+      dimensions,
+      cod,
+      insurance
+    );
+  } else if (deliveryMethod === "Allegro International Kurier Czechy") {
+    return await sendAllegroCourier(
+      orderID,
+      deliveryMethod,
+      dimensions,
+      cod,
+      insurance
+    );
+  } else if (
+    deliveryMethod === "Allegro International Automaty Paczkowe Czechy pobranie"
   ) {
     return await sendAllegroCourier(
       orderID,
@@ -570,40 +598,20 @@ async function getAllegroID(deliveryMethod) {
     return "0ee3467f-5451-4060-856e-7a2b502abe55";
   } else if (deliveryMethod === "Allegro One Box (One Kurier)") {
     return "0b9bed2c-0bc1-4e1f-9694-29bb39ebb483";
+  } else if (deliveryMethod === "Allegro International Kurier Czechy") {
+    return "0c7805b4-1bcc-4dad-98c4-b3146fe9f54a";
   } else if (
-    deliveryMethod === "Allegro International Odbiór w Punkcie Czechy"
+    deliveryMethod === "Allegro International Kurier Czechy pobranie"
   ) {
-    return "0779bdbb-2043-4ed0-aff7-b3146fe9f54a";
-  } else if (
-    deliveryMethod ===
-    "Allegro International Odbiór w Punkcie Czechy (allegro.cz)"
-  ) {
-    return "0af0a4e4-2043-4ed0-aff7-b3146fe9f54a";
-  } else if (
-    deliveryMethod ===
-    "Allegro International Odbiór w Punkcie Czechy pobranie (allegro.cz)"
-  ) {
-    return "1037d74a-2043-4ed0-aff7-b3146fe9f54a";
+    return "1401412f-1bcc-4dad-98c4-b3146fe9f54a";
   } else if (
     deliveryMethod === "Allegro International Automaty Paczkowe Czechy"
   ) {
-    return "0bdd3bfb-32c6-4602-b78f-b3146fe9f54a";
-  } else if (
-    deliveryMethod ===
-    "Allegro International Automaty Paczkowe Czechy (allegro.cz)"
-  ) {
     return "0e40225c-32c6-4602-b78f-b3146fe9f54a";
-  } else if (deliveryMethod === "Allegro International Kurier Czechy") {
-    return "05621e8a-1bcc-4dad-98c4-b3146fe9f54a";
   } else if (
-    deliveryMethod === "Allegro International Kurier Czechy (allegro.cz)"
+    deliveryMethod === "Allegro International Automaty Paczkowe Czechy pobranie"
   ) {
-    return "0c7805b4-1bcc-4dad-98c4-b3146fe9f54a";
-  } else if (
-    deliveryMethod ===
-    "Allegro International Kurier Czechy pobranie (allegro.cz)"
-  ) {
-    return "1401412f-1bcc-4dad-98c4-b3146fe9f54a";
+    return "191819e3-32c6-4602-b78f-b3146fe9f54a";
   } else return -1;
 }
 
