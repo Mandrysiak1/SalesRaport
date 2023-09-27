@@ -297,6 +297,16 @@ async function createPackages(
       cod,
       insurance
     );
+  } else if (
+    deliveryMethod === "Allegro International Kurier Czechy (zbiorczo)"
+  ) {
+    return await sendAllegroCourier(
+      orderID,
+      deliveryMethod,
+      dimensions,
+      cod,
+      insurance
+    );
   } else if (deliveryMethod === "Paczkomaty 24/7 - Przesyłka standardowa") {
     return await sendInpostPaczkomat(orderID, packageSize, cod, insurance);
   } else if (deliveryMethod === "Allegro Paczkomaty 24/7 InPost") {
