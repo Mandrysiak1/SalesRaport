@@ -538,7 +538,8 @@ async function sendAllegroCourier(
     { id: "package_type", value: "PACKAGE" },
     { id: "package_description", value: orderID },
     { id: "reference_number", value: orderID },
-    { id: "insurance", value: insurance }
+    { id: "insurance", value: insurance },
+    { id: "currency", value: "CZK" }
   );
   if (cod != "") {
     fields.push({ id: "cod", value: cod });
