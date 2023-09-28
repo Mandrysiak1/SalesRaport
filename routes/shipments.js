@@ -748,6 +748,7 @@ async function sendEmail(emailTopic, emailContent, emailAdresses, labels) {
 
     return { status: "success" };
   } catch (error) {
+    console.log(error);
     return { status: "error" };
   }
 }
