@@ -538,8 +538,7 @@ async function sendAllegroCourier(
     { id: "package_type", value: "PACKAGE" },
     { id: "package_description", value: orderID },
     { id: "reference_number", value: orderID },
-    { id: "insurance", value: insurance },
-    { id: "currency", value: "CZK" }
+    { id: "insurance", value: insurance }
   );
   if (cod != "") {
     fields.push({ id: "cod", value: cod });
@@ -613,6 +612,14 @@ async function getAllegroID(deliveryMethod) {
     deliveryMethod === "Allegro International Automaty Paczkowe Czechy pobranie"
   ) {
     return "191819e3-32c6-4602-b78f-b3146fe9f54a";
+  } else if (
+    deliveryMethod === "Allegro International Odbiór w Punkcie Czechy pobranie"
+  ) {
+    return "1037d74a-2043-4ed0-aff7-b3146fe9f54a";
+  } else if (
+    deliveryMethod === "Allegro International Odbiór w Punkcie Czechy"
+  ) {
+    return "0af0a4e4-2043-4ed0-aff7-b3146fe9f54a";
   } else return -1;
 }
 

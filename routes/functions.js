@@ -218,7 +218,11 @@ function getDefaultShipmentMethod(orderDetails) {
       orderDetails.orders[0].delivery_method ===
         "Allegro International Odbiór w Punkcie Czechy pobranie" ||
       orderDetails.orders[0].delivery_method ===
-        "Allegro International Kurier Czechy pobranie"
+        "Allegro International Kurier Czechy pobranie" ||
+      orderDetails.orders[0].delivery_method ===
+        "Allegro International Odbiór w Punkcie Czechy" ||
+      orderDetails.orders[0].delivery_method ===
+        "Allegro International Odbiór w Punkcie Czechy pobranie"
     ) {
       return {
         tab: "allegro",
