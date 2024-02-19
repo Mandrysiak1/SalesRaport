@@ -209,7 +209,11 @@ router.post("/get", async (req, res) => {
       var dataArrSelected = [];
 
       selectedProducts.forEach((element) => {
-        if (res.data.products[element.product_id]) {
+        if (
+          res.data.products &&
+          res.data.products[element_res.product_id] !== null &&
+          res.data.products[element_res.product_id] !== undefined
+        ) {
           let isActive =
             res.data.products[element.product_id].text_fields.extra_field_4588;
           let isBundle =
