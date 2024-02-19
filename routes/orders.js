@@ -136,7 +136,11 @@ router.post("/get", async (req, res) => {
     })
     .then((res) => {
       sql_result.forEach((element_res) => {
-        if (res.data.products[element_res.product_id]) {
+        if (
+          res.data.products &&
+          res.data.products[element_res.product_id] !== null &&
+          res.data.products[element_res.product_id] !== undefined
+        ) {
           allProducts.push(element_res);
 
           if (
