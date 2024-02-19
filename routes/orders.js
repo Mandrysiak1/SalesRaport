@@ -49,7 +49,7 @@ router.get("/addall", async (req, res) => {
 router.post("/get", async (req, res) => {
   handleDisconnect();
 
-  console.log("Data from rq: " + req.body);
+  console.log("Data from rq: " + JSON.stringify(req.body));
   raportDays = req.body == null ? raportDays : req.body;
 
   var allFilenames = [];
